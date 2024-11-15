@@ -26,7 +26,7 @@ struct Emprestimo{
 
 struct Pessoa{
 	int id_pessoa;
-	char nome[30],telefone[20],endereco[40];
+	char nome[30],telefone[14],endereco[40];
 };
 
 struct LivroAutor{
@@ -125,8 +125,13 @@ void CadastroLivros(void)
 
 void CadastroAutor(void)
 {
+	LivroAutor LA;
 	Autor A;
+	int ChaveID;
+	char op;
 	clrscr();
+    FILE *PtrL = fopen("Livros.dat", "rb");
+    FILE *PtrLA = fopen("AutorLivro.dat", "ab+");
 	FILE *Ptr = fopen("Autor.dat","ab+");
 	printf("## CADASTRO DE AUTORES ##\n");
 	printf("ID DO AUTOR: ");
@@ -142,14 +147,39 @@ void CadastroAutor(void)
 				fwrite(&A,sizeof(Autor),1,Ptr);
 			
 				printf("AUTOR CADASTRADO!\n");
-			}else
+				
+				printf("AUTOR POSSUI LIVROS(S/N): ");
+				op=toupper(getche());
+				
+				if(op=='S')
+				{
+					do{
+						printf("INFORME OS IDs:\n");
+						scanf("%d",&ChaveID);
+						if(ChaveID>0)
+						{
+							if(BuscaLivro(PtrL,ChaveID)!=-1)
+							{
+								LA.id_autor=A.id_autor;
+								LA.id_livro=ChaveID;
+								fwrite(&LA,sizeof(LivroAutor),1,PtrLA);
+								printf("LIVRO ASSOCIADO COM O AUTOR COM SUCESSO!\n");
+							}else{
+								printf("LIVRO COM ID %d NÃO ENCONTRADO!\n",ChaveID);
+							}
+						}
+					}while(ChaveID>0);
+				}
+			}else{
 				printf("AUTOR JÁ CADASTRADO!\n");
-			
+			}
 			getch();
 			printf("ID DO AUTOR: ");
 			scanf("%d",&A.id_autor);
 		}
 	fclose(Ptr);
+	fclose(PtrL);
+	fclose(PtrLA);
 }
 
 void CadastroPessoa(void)
@@ -168,11 +198,22 @@ void CadastroPessoa(void)
 				gets(P.nome);
 				printf("TELEFONE((XX)XXXXX-XXXX): "); fflush(stdin);
 				gets(P.telefone);
-				printf("ENDEREÇO: "); fflush(stdin);
-				gets(P.endereco);				
-				fwrite(&P,sizeof(Pessoa),1,Ptr);
-			
-				printf("PESSOA CADASTRADA!\n");
+				if(strlen(P.telefone)==14)
+				{
+					if(P.telefone[0] == '(' || P.telefone[3] == ')' || P.telefone[9] == '-')
+					{
+						printf("ENDEREÇO: "); fflush(stdin);
+						gets(P.endereco);				
+						fwrite(&P,sizeof(Pessoa),1,Ptr);	
+						printf("PESSOA CADASTRADA!\n");
+					}else{
+						printf("TELEFONE INVÁLIDO!\n");
+						fclose(Ptr);
+					}
+				}else{
+					printf("TELEFONE INVÁLIDO!\n"); 
+					fclose(Ptr);
+				}			
 			}else
 				printf("PESSOA JÁ CADASTRADA!\n");
 			
