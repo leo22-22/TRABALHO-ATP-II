@@ -79,9 +79,25 @@ int BuscaAutor(FILE *Ptr, int ChaveID)
 	
 }
 
+int BuscaPessoa(FILE *Ptr, int ChaveID)
+{
+	Pessoa P;
+	rewind(Ptr);
+	fread(&P,sizeof(Pessoa),1,Ptr);
+	while(!feof(Ptr) && ChaveID!=P.id_pessoa)
+		fread(&P,sizeof(Pessoa),1,Ptr);
+
+	if (ChaveID==P.id_pessoa)
+		return ftell(Ptr)-sizeof(Pessoa);
+	else
+		return -1;
+	
+}
+
 void CadastroLivros(void)
 {
 	Livros L;
+	clrscr();
 	FILE *Ptr = fopen("Livros.dat","ab+");
 	printf("## CADASTRO DE LIVROS ##\n");
 	printf("ID DO LIVRO: ");
@@ -110,11 +126,12 @@ void CadastroLivros(void)
 void CadastroAutor(void)
 {
 	Autor A;
+	clrscr();
 	FILE *Ptr = fopen("Autor.dat","ab+");
 	printf("## CADASTRO DE AUTORES ##\n");
 	printf("ID DO AUTOR: ");
 	scanf("%d",&A.id_autor);
-		while(id_autor>0)
+		while(A.id_autor>0)
 		{
 			if(BuscaAutor(Ptr,A.id_autor)==-1)
 			{
@@ -135,4 +152,118 @@ void CadastroAutor(void)
 	fclose(Ptr);
 }
 
+void CadastroPessoa(void)
+{
+	Pessoa P;
+	clrscr();
+	FILE *Ptr = fopen("Pessoas.dat","ab+");
+	printf("## CADASTRO DE PESSOAS ##\n");
+	printf("ID DA PESSOA: ");
+	scanf("%d",&P.id_pessoa);
+		while(P.id_pessoa>0)
+		{
+			if(BuscaPessoa(Ptr,P.id_pessoa)==-1)
+			{
+				printf("NOME DA PESSOA: "); fflush(stdin);
+				gets(P.nome);
+				printf("TELEFONE((XX)XXXXX-XXXX): "); fflush(stdin);
+				gets(P.telefone);
+				printf("ENDEREÇO: "); fflush(stdin);
+				gets(P.endereco);				
+				fwrite(&P,sizeof(Pessoa),1,Ptr);
+			
+				printf("PESSOA CADASTRADA!\n");
+			}else
+				printf("PESSOA JÁ CADASTRADA!\n");
+			
+			getch();
+			printf("ID DA PESSOA: ");
+			scanf("%d",&P.id_pessoa);
+		}
+	fclose(Ptr);
+}
+
+
+
+char Menu(void)
+{
+	clrscr();
+	printf("## MENU ##\n");
+	printf("[A]CADASTRAR LIVROS\n");
+	printf("[B]CADASTRAR AUTOR\n");
+	printf("[C]CADASTRAR PESSOA\n");
+	printf("[D]REALIZAR EMPRESTIMO\n");
+	printf("[E]EXCLUSÃO LÓGICA\n");
+	printf("[F]EXCLUSA FISICA\n");
+	printf("[G]ALTERAÇÃO POR ID\n");
+	printf("[H]CONSULTAR LIVRO\n");
+	printf("[I]CONSULTAR AUTOR\n");
+	printf("[J]CONSULTA PESSOA\n");
+	printf("[K]CONSULTAR EMPRÉSTIMO\n");
+	printf("[L]GERAR RELATÓRIO DOS LIVROS\n");
+	printf("[M]GERAR RELATÓRIO DOS AUTORES\n");
+	printf("[N]GERAR RELATÓRIO DAS PESSOAS\n");
+	printf("[O]GERAR RELATÓRIO GERAL\n");
+	printf("[P]GERAR RELATÓRIO POR LETRA\n");
+	printf("[Q]GERAR RELATÓRIO POR PALAVRA NO TÍTULO\n");
+	printf("[R]GERAR RELATÓRIO DE EMPRÉSTIMO FEITO POR UMA PESSOA\n");
+	printf("[S]GERAR RELATÓRIO DE TODOS OS LIVROS DE UM AUTOR\n");
+	printf("[T]GERAR RELATÓRIO DE TODOS OS EMPRÉSTIMOS FEITOS POR UMA PESSOA\n");
+	printf("CADASTRAR LIVROS\n");
+	return toupper(getche());
+}
+
+int main(void)
+{
+	char op;
+	do
+	{
+		op = Menu();
+		switch(op)
+		{
+			case 'A': CadastroLivros();
+				break;
+			case 'B': CadastroAutor();
+				break;
+			case 'C': CadastroPessoa();
+				break;
+			case 'D':
+				break;
+			case 'E':
+				break;
+			case 'F':
+				break;
+			case 'G':
+				break;
+			case 'H':
+				break;
+			case 'I':
+				break;
+			case 'J':
+				break;
+			case 'K':
+				break;
+			case 'L':
+				break;
+			case 'M':
+				break;
+			case 'N':
+				break;
+			case 'O':
+				break;
+			case 'P':
+				break;
+			case 'Q':
+				break;
+			case 'R':
+				break;
+			case 'S':
+				break;
+			case 'T':
+				break;
+		}
+	}while(op!=27);
+	
+	return 0;
+}
 
