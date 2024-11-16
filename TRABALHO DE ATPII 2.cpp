@@ -327,6 +327,44 @@ void Alterar(void)
     fclose(PtrLA);
 }
 
+void RealizarEmprestimo(void)
+{
+	Livros Li;
+	Autor Au;
+	Pessoa Pe;
+	FILE *PtrLi = fopen("Livros.dat","wb+");
+	FILE *PtrAu = fopen("Autor.dat","wb+");
+	FILE *PtrPe = fopen("Pessoa.dat","wb+");		
+	printf("## EFETUAR EMPRÉSTIMOS ##\n");
+	printf("I.D PESSOA: ");
+	scanf("%d\n",&Pe.id_pessoa);
+	if(BuscaPessoa(PtrPe,Pe.id_pessoa)==-1)
+	{
+		fseek(PtrPe,0,0);
+		printf("## PESSOA ENCONTRADA! ##\n");
+		printf("I.D: %d\n",Pe.id_pessoa);
+		printf("NOME: %s\n",Pe.nome);
+		printf("TELEFONE: %s\n",Pe.telefone);
+		printf("ENDEREÇO: %s\n",Pe.endereco);
+		printf("REALIZAR EMPRÉSTIMO(S/N)?\n");
+		if(toupper(getche())=='S')
+		{
+			printf("I.D DO LIVRO PARA EMPRÉSTIMO:\n");
+			scanf("%d",&Li.id_livro);
+			if(BuscaLivro(PtrLi,Li.id_livro)==-1){
+				fseek(PtrLi,0,0);
+				printf("LIVRO ENCONTRADO!\n");
+				printf("I.D: %d\n",Li.id_livro);
+				printf("TITULO: %s\n",Li.titulo);
+				printf("ANO DE PUBLICAÇÃO: %d\n",Li.ano_publi);
+				
+				printf("CONFIRMAR EMPRÉSTIMO DO LIVRO %s PARA %s?(S/N)\n",.Li.titulo,Pe.nome);
+				
+			}
+		}
+	}
+}
+
 char Menu(void)
 {
 	clrscr();
