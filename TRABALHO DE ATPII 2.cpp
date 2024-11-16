@@ -6,7 +6,7 @@
 
 struct Livros{
 	int id_livro,ano_publi;
-	char titulo[30];
+	char titulo[100];
 };
 
 struct Autor{
@@ -96,32 +96,67 @@ int BuscaPessoa(FILE *Ptr, int ChaveID)
 
 void CadastroLivros(void)
 {
-	Livros L;
-	clrscr();
-	FILE *Ptr = fopen("Livros.dat","ab+");
-	printf("## CADASTRO DE LIVROS ##\n");
-	printf("ID DO LIVRO: ");
-	scanf("%d",&L.id_livro);
-		while(L.id_livro>0)
-		{
-			if(BuscaLivro(Ptr,L.id_livro)==-1)
-			{
-				printf("NOME DO LIVRO: "); fflush(stdin);
-				gets(L.titulo);
-				printf("ANO DE PUBLICAÇÃO: "); fflush(stdin);
-				scanf("%d",&L.ano_publi);
-				fwrite(&L,sizeof(Livros),1,Ptr);
-			
-				printf("LIVRO CADASTRADO!\n");
-			}else
-				printf("ID já cadastrado!\n");
-			
-			getch();
-			printf("ID DO LIVRO: ");
-			scanf("%d",&L.id_livro);
-		}
-	fclose(Ptr);
+    Livros L;
+    clrscr();
+    FILE *Ptr = fopen("Livros.dat", "ab+");
+    printf("## CADASTRO DE LIVROS ##\n");
+    printf("ID DO LIVRO: ");
+    scanf("%d", &L.id_livro);
+
+    while (L.id_livro > 0)
+    {
+        if (BuscaLivro(Ptr, L.id_livro) == -1)
+        {
+            int titulo_valido = 0;
+            while (!titulo_valido)
+            {
+                printf("NOME DO LIVRO: ");
+                fflush(stdin);
+                gets(L.titulo);
+
+                titulo_valido = 1;
+                for (int i = 0; L.titulo[i] != '\0'; i++)
+                {
+                    if (!((L.titulo[i] >= 'A' && L.titulo[i] <= 'Z') || 
+                          (L.titulo[i] >= 'a' && L.titulo[i] <= 'z') || 
+                          L.titulo[i] == ' '))
+                    {
+                        titulo_valido = 0;
+                        printf("TÍTULO INVÁLIDO! Use apenas letras e espaços.\n");
+                        i = strlen(L.titulo);
+                    }
+                }
+            }
+
+            printf("ANO DE PUBLICAÇÃO (XXXX): ");
+            scanf("%d", &L.ano_publi);
+
+            if (L.ano_publi >= 1000 && L.ano_publi <= 2024)
+            {
+                fwrite(&L, sizeof(Livros), 1, Ptr);
+                printf("LIVRO CADASTRADO!\n");
+            }
+            else if (L.ano_publi > 2024 || L.ano_publi <= 9999)
+            {
+                printf("ANO DE PUBLICAÇÃO INVÁLIDO! Data limite até 2024.\n");
+            }
+            else if (L.ano_publi < 1000 || L.ano_publi > 9999)
+            {
+                printf("ANO DE PUBLICAÇÃO INVÁLIDO! Deve ter 4 dígitos.\n");
+            }
+        }
+        else
+        {
+            printf("ID já cadastrado!\n");
+        }
+
+        getch();
+        printf("ID DO LIVRO: ");
+        scanf("%d", &L.id_livro);
+    }
+    fclose(Ptr);
 }
+
 
 void CadastroAutor(void)
 {
@@ -224,7 +259,73 @@ void CadastroPessoa(void)
 	fclose(Ptr);
 }
 
+void Alterar(void)
+{
+	LivroAutor LA;
+	Autor A;
+	int pos;
+	char op;
+	clrscr();
+    FILE *PtrL = fopen("Livros.dat", "rb");
+    FILE *PtrLA = fopen("AutorLivro.dat", "ab+");
+	FILE *Ptr = fopen("Autor.dat","ab+");
+	printf("## ALTERAR POR I.D ##\n");
+	printf("ID DO AUTOR PARA ALTERAR: ");
+	scanf("%d",&A.id_autor);
+		while(A.id_autor>0)
+		{
+			pos = BuscaAutor(Ptr,A.id_autor);
+			if(BuscaAutor(Ptr,A.id_autor)==-1)
+			{
+				printf("I.D NÃO ENCONTRADO!\n");
+			}else{
+				fseek(Ptr, pos, SEEK_SET);
+        		fread(&A, sizeof(Autor), 1, Ptr);
+            	printf("## DADOS FORAM ENCONTRADOS! ##\n");
+            	printf("NOME DO AUTOR: %s\n", A.nome);
+            	printf("NACIONALIDADE: %s\n", A.nacionalidade);
 
+            	printf("\nDESEJA ALTERAR (S/N)? ");
+            	if (toupper(getche()) == 'S')
+            	{
+                	printf("\nNOVO I.D: ");
+                	scanf("%d", &LA.id_autor);
+               		printf("NOVO NOME: ");fflush(stdin);
+                	gets(A.nome);
+                	printf("NOVA NACIONALIDADE: ");
+                	fflush(stdin);
+                	gets(A.nacionalidade);
+
+                	fseek(Ptr, pos, 0);
+                	fwrite(&A, sizeof(Autor), 1, Ptr);
+
+                	fseek(PtrLA, 0, 0);
+                	while (fread(&LA, sizeof(LivroAutor), 1, PtrLA) == 1)
+               		{
+                    	if (LA.id_autor == A.id_autor)
+                    	{
+                    	    fseek(PtrLA, -sizeof(LivroAutor), 1);
+                    	    LA.id_autor = LA.id_autor; 
+                    	    fwrite(&LA, sizeof(LivroAutor), 1, PtrLA);
+                    	}
+                	}
+
+               		printf("\nDADOS FORAM ATUALIZADOS!\n");
+                	printf("NOVO I.D: %d\n", LA.id_autor);
+                	printf("NOVO NOME: %s\n", A.nome);
+                	printf("NOVA NACIONALIDADE: %s\n", A.nacionalidade);
+            	}
+        	}	
+
+        getch();
+        printf("ID DO AUTOR PARA ALTERAR: ");
+        scanf("%d", &A.id_autor);
+    }
+
+    fclose(Ptr);
+    fclose(PtrL);
+    fclose(PtrLA);
+}
 
 char Menu(void)
 {
@@ -250,7 +351,7 @@ char Menu(void)
 	printf("[R]GERAR RELATÓRIO DE EMPRÉSTIMO FEITO POR UMA PESSOA\n");
 	printf("[S]GERAR RELATÓRIO DE TODOS OS LIVROS DE UM AUTOR\n");
 	printf("[T]GERAR RELATÓRIO DE TODOS OS EMPRÉSTIMOS FEITOS POR UMA PESSOA\n");
-	printf("CADASTRAR LIVROS\n");
+	printf("[0 PARA SAIR]\n");
 	return toupper(getche());
 }
 
@@ -274,7 +375,7 @@ int main(void)
 				break;
 			case 'F':
 				break;
-			case 'G':
+			case 'G': Alterar();
 				break;
 			case 'H':
 				break;
