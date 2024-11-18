@@ -122,13 +122,13 @@ void CadastroLivros(void)
                           L.titulo[i] == ' '))
                     {
                         titulo_valido = 0;
-                        printf("TÍTULO INVÁLIDO! Use apenas letras e espaços.\n");
+                        printf("Tï¿½TULO INVï¿½LIDO! Use apenas letras e espaï¿½os.\n");
                         i = strlen(L.titulo);
                     }
                 }
             }
 
-            printf("ANO DE PUBLICAÇÃO (XXXX): ");
+            printf("ANO DE PUBLICAï¿½ï¿½O (XXXX): ");
             scanf("%d", &L.ano_publi);
 
             if (L.ano_publi >= 1000 && L.ano_publi <= 2024)
@@ -138,16 +138,16 @@ void CadastroLivros(void)
             }
             else if (L.ano_publi > 2024 || L.ano_publi <= 9999)
             {
-                printf("ANO DE PUBLICAÇÃO INVÁLIDO! Data limite até 2024.\n");
+                printf("ANO DE PUBLICAï¿½ï¿½O INVï¿½LIDO! Data limite atï¿½ 2024.\n");
             }
             else if (L.ano_publi < 1000 || L.ano_publi > 9999)
             {
-                printf("ANO DE PUBLICAÇÃO INVÁLIDO! Deve ter 4 dígitos.\n");
+                printf("ANO DE PUBLICAï¿½ï¿½O INVï¿½LIDO! Deve ter 4 dï¿½gitos.\n");
             }
         }
         else
         {
-            printf("ID já cadastrado!\n");
+            printf("ID jï¿½ cadastrado!\n");
         }
 
         getch();
@@ -200,13 +200,13 @@ void CadastroAutor(void)
 								fwrite(&LA,sizeof(LivroAutor),1,PtrLA);
 								printf("LIVRO ASSOCIADO COM O AUTOR COM SUCESSO!\n");
 							}else{
-								printf("LIVRO COM ID %d NÃO ENCONTRADO!\n",ChaveID);
+								printf("LIVRO COM ID %d Nï¿½O ENCONTRADO!\n",ChaveID);
 							}
 						}
 					}while(ChaveID>0);
 				}
 			}else{
-				printf("AUTOR JÁ CADASTRADO!\n");
+				printf("AUTOR Jï¿½ CADASTRADO!\n");
 			}
 			getch();
 			printf("ID DO AUTOR: ");
@@ -237,20 +237,20 @@ void CadastroPessoa(void)
 				{
 					if(P.telefone[0] == '(' || P.telefone[3] == ')' || P.telefone[9] == '-')
 					{
-						printf("ENDEREÇO: "); fflush(stdin);
+						printf("ENDEREï¿½O: "); fflush(stdin);
 						gets(P.endereco);				
 						fwrite(&P,sizeof(Pessoa),1,Ptr);	
 						printf("PESSOA CADASTRADA!\n");
 					}else{
-						printf("TELEFONE INVÁLIDO!\n");
+						printf("TELEFONE INVï¿½LIDO!\n");
 						fclose(Ptr);
 					}
 				}else{
-					printf("TELEFONE INVÁLIDO!\n"); 
+					printf("TELEFONE INVï¿½LIDO!\n"); 
 					fclose(Ptr);
 				}			
 			}else
-				printf("PESSOA JÁ CADASTRADA!\n");
+				printf("PESSOA Jï¿½ CADASTRADA!\n");
 			
 			getch();
 			printf("ID DA PESSOA: ");
@@ -277,7 +277,7 @@ void Alterar(void)
 			pos = BuscaAutor(Ptr,A.id_autor);
 			if(BuscaAutor(Ptr,A.id_autor)==-1)
 			{
-				printf("I.D NÃO ENCONTRADO!\n");
+				printf("I.D Nï¿½O ENCONTRADO!\n");
 			}else{
 				fseek(Ptr, pos, SEEK_SET);
         		fread(&A, sizeof(Autor), 1, Ptr);
@@ -330,39 +330,67 @@ void Alterar(void)
 void RealizarEmprestimo(void)
 {
 	Livros Li;
-	Autor Au;
 	Pessoa Pe;
-	FILE *PtrLi = fopen("Livros.dat","wb+");
-	FILE *PtrAu = fopen("Autor.dat","wb+");
-	FILE *PtrPe = fopen("Pessoa.dat","wb+");		
-	printf("## EFETUAR EMPRÉSTIMOS ##\n");
+	Emprestimo Em;
+	Pessoa Pe;
+	FILE *PtrLi = fopen("Livros.dat","rb");
+	FILE *PtrEm = fopen("Emprestimos.dat","rb");
+	FILE *PtrPe = fopen("Pessoas.dat","ab");
+	clrscr();		
+	printf("## EFETUAR EMPRï¿½STIMOS ##\n");
 	printf("I.D PESSOA: ");
-	scanf("%d\n",&Pe.id_pessoa);
-	if(BuscaPessoa(PtrPe,Pe.id_pessoa)==-1)
+	scanf("%d\n",&Em.id_pessoa);
+	if(BuscaPessoa(PtrPe,Em.id_pessoa)!=-1)
 	{
-		fseek(PtrPe,0,0);
+		fseek(PtrPe,BuscaPessoa(PtrPe,Em.id_pessoa),0);
+		fread(&Pe,sizeof(Pessoa),1, PtrPe);
 		printf("## PESSOA ENCONTRADA! ##\n");
 		printf("I.D: %d\n",Pe.id_pessoa);
 		printf("NOME: %s\n",Pe.nome);
 		printf("TELEFONE: %s\n",Pe.telefone);
-		printf("ENDEREÇO: %s\n",Pe.endereco);
-		printf("REALIZAR EMPRÉSTIMO(S/N)?\n");
+		printf("ENDEREï¿½O: %s\n",Pe.endereco);
+		printf("REALIZAR EMPRï¿½STIMO(S/N)?\n");
 		if(toupper(getche())=='S')
 		{
-			printf("I.D DO LIVRO PARA EMPRÉSTIMO:\n");
+			printf("I.D DO LIVRO PARA EMPRï¿½STIMO:\n");
 			scanf("%d",&Li.id_livro);
-			if(BuscaLivro(PtrLi,Li.id_livro)==-1){
-				fseek(PtrLi,0,0);
+			if(BuscaLivro(PtrLi,Li.id_livro)!=-1){
+				fseek(PtrLi,BuscaLivro(PtrLi,Li.id_livro),0);
+				fread(&Li,sizeof(Livros),1,PtrLi);
 				printf("LIVRO ENCONTRADO!\n");
 				printf("I.D: %d\n",Li.id_livro);
 				printf("TITULO: %s\n",Li.titulo);
-				printf("ANO DE PUBLICAÇÃO: %d\n",Li.ano_publi);
+				printf("ANO DE PUBLICAï¿½ï¿½O: %d\n",Li.ano_publi);
 				
-				printf("CONFIRMAR EMPRÉSTIMO DO LIVRO %s PARA %s?(S/N)\n",.Li.titulo,Pe.nome);
-				
+				printf("CONFIRMAR EMPRï¿½STIMO DO LIVRO %s PARA %s?(S/N)\n",.Li.titulo,Pe.nome);
+				if(toupper(getche())=='S')
+				{
+					printf("## EMPRÃ‰STIMO CONCEDIDO! ##\n");
+					fwrite(&Em,sizeof(Emprestimo),1,PtrEm);
+
+					printf("I.D: %d\n",Pe.id_pessoa);
+					printf("NOME: %s\n",Pe.nome);
+					printf("TELEFONE: %s\n",Pe.telefone);
+					printf("ENDEREï¿½O: %s\n",Pe.endereco);
+					printf("I.D: %d\n",Li.id_livro);
+					printf("TITULO: %s\n",Li.titulo);
+					printf("ANO DE PUBLICAï¿½ï¿½O: %d\n",Li.ano_publi);
+				}else{
+					printf("EMPRÃ‰STIMO CANCELADO!\n");
+				}
+			}else{
+				printf("LIVRRO NÃƒO ENCONTRADO!\n");
 			}
+		}else{
+			printf("ERRO NO EMPRÃ‰STIMO!\n");
 		}
+	}else{
+		printf("PESSOA NÃƒO ENCONTRADA!\n");
 	}
+	fclose(PtrLi);
+	fclose(PtrPe);
+	fclose(PtrEm);
+	getch();
 }
 
 char Menu(void)
@@ -373,22 +401,22 @@ char Menu(void)
 	printf("[B]CADASTRAR AUTOR\n");
 	printf("[C]CADASTRAR PESSOA\n");
 	printf("[D]REALIZAR EMPRESTIMO\n");
-	printf("[E]EXCLUSÃO LÓGICA\n");
+	printf("[E]EXCLUSï¿½O Lï¿½GICA\n");
 	printf("[F]EXCLUSA FISICA\n");
-	printf("[G]ALTERAÇÃO POR ID\n");
+	printf("[G]ALTERAï¿½ï¿½O POR ID\n");
 	printf("[H]CONSULTAR LIVRO\n");
 	printf("[I]CONSULTAR AUTOR\n");
 	printf("[J]CONSULTA PESSOA\n");
-	printf("[K]CONSULTAR EMPRÉSTIMO\n");
-	printf("[L]GERAR RELATÓRIO DOS LIVROS\n");
-	printf("[M]GERAR RELATÓRIO DOS AUTORES\n");
-	printf("[N]GERAR RELATÓRIO DAS PESSOAS\n");
-	printf("[O]GERAR RELATÓRIO GERAL\n");
-	printf("[P]GERAR RELATÓRIO POR LETRA\n");
-	printf("[Q]GERAR RELATÓRIO POR PALAVRA NO TÍTULO\n");
-	printf("[R]GERAR RELATÓRIO DE EMPRÉSTIMO FEITO POR UMA PESSOA\n");
-	printf("[S]GERAR RELATÓRIO DE TODOS OS LIVROS DE UM AUTOR\n");
-	printf("[T]GERAR RELATÓRIO DE TODOS OS EMPRÉSTIMOS FEITOS POR UMA PESSOA\n");
+	printf("[K]CONSULTAR EMPRï¿½STIMO\n");
+	printf("[L]GERAR RELATï¿½RIO DOS LIVROS\n");
+	printf("[M]GERAR RELATï¿½RIO DOS AUTORES\n");
+	printf("[N]GERAR RELATï¿½RIO DAS PESSOAS\n");
+	printf("[O]GERAR RELATï¿½RIO GERAL\n");
+	printf("[P]GERAR RELATï¿½RIO POR LETRA\n");
+	printf("[Q]GERAR RELATï¿½RIO POR PALAVRA NO Tï¿½TULO\n");
+	printf("[R]GERAR RELATï¿½RIO DE EMPRï¿½STIMO FEITO POR UMA PESSOA\n");
+	printf("[S]GERAR RELATï¿½RIO DE TODOS OS LIVROS DE UM AUTOR\n");
+	printf("[T]GERAR RELATï¿½RIO DE TODOS OS EMPRï¿½STIMOS FEITOS POR UMA PESSOA\n");
 	printf("[0 PARA SAIR]\n");
 	return toupper(getche());
 }
