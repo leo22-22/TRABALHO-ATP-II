@@ -57,20 +57,30 @@ int BuscaAutorPorLivro(FILE *Ptr, int id_livro);
 int BuscaPessoa(FILE *Ptr, int ChaveID);
 int BuscaEmprestimo(FILE *Ptr, int ChaveID);
 
+// Funções de cadastro
 void CadastroLivros();
 void CadastroAutor();
 void CadastroPessoa();
 void CadastroLivroAutor();
 void RealizarEmprestimo();
+
+// Funções de exclusão
 void ExclusaoLogica();
 void ExclusaoFisica();
+
+// Funções de alteração
 void AlterarDados();
+
+// Funções de consulta
 void ConsultarDados();
+
+// Funções de exibição
 void ExibirLivros(void);
 void ExibirPessoas(void);
 void ExibirAutores(void);
 void ExibirEmprestimos(void);
 
+// Funções de relatório
 void RelatorioAutoresPorLetra(char letra);
 void RelatorioLivrosPorPalavra(char *palavra);
 void RelatorioEmprestimosPorPessoa(int id_pessoa);
@@ -1249,12 +1259,18 @@ void ExibirLivrosPorAutor(FILE *PtrLivroAutor, FILE *PtrLivros, int id_autor) {
 
 
 
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 void relatorios() {
     char opcao;
-    
-    clrscr();  // Limpa a tela antes de exibir o menu de relatórios
-    printf("## MENU DE RELATORIOS ##\n");
+
+    // Limpa a tela (uso de sistema operacional moderno)
+    system("cls");  // Para Windows
+    // system("clear");  // Para sistemas Unix/Linux
+
+    printf("## MENU DE RELATÓRIOS ##\n");
     printf("A. Relatório de autores por letra\n");
     printf("B. Relatório de livros por palavra no título\n");
     printf("C. Relatório de empréstimos por pessoa\n");
@@ -1264,73 +1280,81 @@ void relatorios() {
     printf("G. Sair\n");
 
     printf("Escolha uma opção (A-G): ");
-    opcao = toupper(getche());  // Usa toupper(getche()) para ler e mostrar a opção digitada em maiúscula
+    opcao = getchar();  // Usa getchar() para ler a opção
+    opcao = toupper(opcao);  // Converte para maiúsculo
+    getchar();  // Captura o Enter
+
     printf("\n");
 
     switch (opcao) {
         case 'A': {
             char letra;
             printf("Digite a letra para filtrar os autores: ");
-            letra = toupper(getche());  // Usa toupper(getche()) para ler a letra em maiúscula
-            printf("\n");
-            clrscr();
-            RelatorioAutoresPorLetra(letra);
+            letra = getchar();  // Lê a letra
+            letra = toupper(letra);  // Garante que a letra seja maiúscula
+            getchar();  // Captura o Enter
+            system("cls");  // Limpa a tela
+            ExibirAutorPorLetra(letra);  // Chama a função do relatório
             break;
         }
         case 'B': {
             char palavra[50];
             printf("Digite a palavra para filtrar os livros: ");
             scanf("%s", palavra);
-            getchar();  // Captura o Enter
-            clrscr();
-            RelatorioLivrosPorPalavra(palavra);
+            getchar();  // Captura o Enter após a entrada de string
+            system("cls");  // Limpa a tela
+            ExibirLivroPorPalavra(palavra);  // Chama a função do relatório
             break;
         }
         case 'C': {
             int id_pessoa;
             printf("Digite o ID da pessoa para visualizar os empréstimos: ");
             scanf("%d", &id_pessoa);
-            getchar();  // Captura o Enter
-            clrscr();
-            RelatorioEmprestimosPorPessoa(id_pessoa);
+            getchar();  // Captura o Enter após a entrada de número
+            system("cls");  // Limpa a tela
+            ExibirEmprestimoPorPessoa(id_pessoa);  // Chama a função do relatório
             break;
         }
         case 'D': {
             int id_autor;
             printf("Digite o ID do autor para visualizar os livros: ");
             scanf("%d", &id_autor);
-            getchar();  // Captura o Enter
-            clrscr();
-            RelatorioLivrosPorAutor(id_autor);
+            getchar();  // Captura o Enter após a entrada de número
+            system("cls");  // Limpa a tela
+            ExibirLivrosPorAutor(id_autor);  // Chama a função do relatório
             break;
         }
         case 'E': {
-            clrscr();
-            RelatorioEmprestimosSeparadosPorPessoa();
+            system("cls");  // Limpa a tela
+            ExibirEmprestimoPorPessoaDetalhado();  // Chama a função do relatório
             break;
         }
         case 'F': {
-            clrscr();
-            RelatorioCompleto();
+            system("cls");  // Limpa a tela
+            RelatorioCompleto();  // Chama a função do relatório completo
             break;
         }
         case 'G':
-            return;  // Se a opção for G, sai do menu de relatórios
+            return;  // Sai do menu de relatórios
         default:
             printf("Opção inválida! Tente novamente.\n");
-            getche();  // Espera que o usuário pressione uma tecla
+            getchar();  // Espera que o usuário pressione uma tecla
             break;
     }
 
     printf("\nPressione qualquer tecla para voltar ao menu.");
-    getche();  // Pausa a execução aguardando que o usuário pressione uma tecla
+    getchar();  // Pausa a execução aguardando uma tecla
     relatorios();  // Chama novamente o menu de relatórios
 }
+
 
 void RelatorioCompleto() {
     char opcao;
     
-    clrscr();  // Limpa a tela antes de exibir o menu de relatório completo
+    // Limpa a tela (uso de sistema operacional moderno)
+    system("cls");  // Para Windows
+    // system("clear");  // Para sistemas Unix/Linux
+
     printf("## RELATÓRIO COMPLETO ##\n");
     printf("Escolha qual relatório completo deseja gerar:\n");
     printf("1. Relatório de Autores\n");
@@ -1340,78 +1364,145 @@ void RelatorioCompleto() {
     printf("5. Voltar\n");
 
     printf("Escolha uma opção (1-5): ");
-    opcao = toupper(getche());  // Usa toupper(getche()) para ler e mostrar a opção digitada em maiúscula
+    opcao = getchar();  // Usa getchar() para ler a opção
+    opcao = toupper(opcao);  // Converte para maiúsculo
+
     printf("\n");
 
     switch (opcao) {
         case '1':
-            clrscr();
-            RelatorioAutoresCompleto();
+            system("cls");  // Limpa a tela
+            RelatorioAutoresCompleto();  // Chama a função de relatório de autores
             break;
         case '2':
-            clrscr();
-            RelatorioLivrosCompleto();
+            system("cls");  // Limpa a tela
+            RelatorioLivrosCompleto();  // Chama a função de relatório de livros
             break;
         case '3':
-            clrscr();
-            RelatorioPessoasCompleto();
+            system("cls");  // Limpa a tela
+            RelatorioPessoasCompleto();  // Chama a função de relatório de pessoas
             break;
         case '4':
-            clrscr();
-            RelatorioEmprestimosCompleto();
+            system("cls");  // Limpa a tela
+            RelatorioEmprestimosCompleto();  // Chama a função de relatório de empréstimos
             break;
         case '5':
-            return;  // Voltar ao menu de relatórios
+            return;  // Volta ao menu anterior
         default:
             printf("Opção inválida! Tente novamente.\n");
-            getche();  // Espera que o usuário pressione uma tecla
+            getchar();  // Espera o usuário pressionar uma tecla
             RelatorioCompleto();  // Tenta novamente
             break;
     }
 
+    // Espera o usuário pressionar uma tecla para voltar ao menu
     printf("\nPressione qualquer tecla para voltar ao menu.");
-    getche();  // Pausa a execução aguardando que o usuário pressione uma tecla
+    getchar();  // Pausa a execução aguardando uma tecla
 }
 
-void RelatorioAutoresPorLetra(char letra) {
-    Autor A;
-    FILE *PtrAutores = fopen("Autor.dat", "rb+");
+void ExibirAutoresPorLetra(char letra) {
+    FILE *Ptr = fopen("Autor.dat", "rb");  // Abre o arquivo de autores em modo leitura binária
+    if (Ptr == NULL) {
+        printf("Erro ao abrir o arquivo de autores.\n");
+        return;  // Se o arquivo não foi aberto corretamente, retorna
+    }
 
-    if (PtrAutores == NULL) {
-        printf("Erro ao abrir arquivo de autores!\n");
-    } else {
-        printf("## Relatório de Autores (Letra %c) ##\n", letra);
+    Autor autores[100];  // Array para armazenar os autores encontrados
+    int numAutores = 0;
 
-        rewind(PtrAutores);
-        while (fread(&A, sizeof(struct Autor), 1, PtrAutores) == 1) {
-            if (toupper(A.nome[0]) == toupper(letra)) {  // Verifica a letra inicial do nome
-                printf("ID: %d | Nome: %s | Nacionalidade: %s\n", A.id_autor, A.nome, A.nacionalidade);
+    // Buscar autores cujo nome começa com a letra fornecida
+    fseek(Ptr, 0, SEEK_SET);  // Ir para o início do arquivo
+    Autor Au;
+
+    while (fread(&Au, sizeof(Autor), 1, Ptr) == 1) {
+        // Verifica se o nome do autor começa com a letra fornecida
+        if (Au.nome[0] == letra || Au.nome[0] == letra + 32) {  // Maiúscula ou minúscula
+            autores[numAutores++] = Au;  // Armazena o autor no array
+        }
+    }
+
+    if (numAutores == 0) {
+        printf("Nenhum autor encontrado com a letra '%c'.\n", letra);
+        fclose(Ptr);  // Fecha o arquivo
+        return;
+    }
+
+    // Ordenar os autores pela nacionalidade
+    for (int i = 0; i < numAutores - 1; i++) {
+        for (int j = i + 1; j < numAutores; j++) {
+            if (strcmp(autores[i].nacionalidade, autores[j].nacionalidade) > 0) {
+                // Troca de posições
+                Autor temp = autores[i];
+                autores[i] = autores[j];
+                autores[j] = temp;
             }
         }
-
-        fclose(PtrAutores);
     }
+
+    // Exibir o relatório ordenado
+    printf("Autores cujo nome começa com '%c', ordenados por nacionalidade:\n", letra);
+    for (int i = 0; i < numAutores; i++) {
+        printf("\nID do Autor: %d\n", autores[i].id_autor);
+        printf("Nome: %s\n", autores[i].nome);
+        printf("Nacionalidade: %s\n", autores[i].nacionalidade);
+        printf("Ativo: %d\n", autores[i].ativo);
+    }
+
+    fclose(Ptr);  // Fecha o arquivo após o uso
 }
 
-void RelatorioLivrosPorPalavra(char *palavra) {
+void ExibirLivrosPorPalavra(char *palavra) {
+    FILE *Ptr = fopen("Livros.dat", "rb");  // Abre o arquivo de livros em modo leitura binária
+
+    if (Ptr == NULL) {
+        printf("Erro ao abrir o arquivo de livros.\n");
+        return;  // Se o arquivo não foi aberto corretamente, retorna
+    }
+
+    Livros livros[100];  // Array para armazenar os livros encontrados
+    int numLivros = 0;
+
+    // Buscar livros cujo título contenha a palavra fornecida
+    fseek(Ptr, 0, SEEK_SET);  // Ir para o início do arquivo
     Livros L;
-    FILE *PtrLivros = fopen("Livros.dat", "rb+");
 
-    if (PtrLivros == NULL) {
-        printf("Erro ao abrir arquivo de livros!\n");
-    } else {
-        printf("## Relatório de Livros (Palavra: %s) ##\n", palavra);
+    while (fread(&L, sizeof(Livros), 1, Ptr) == 1) {
+        // Verifica se o título do livro contém a palavra fornecida
+        if (strstr(L.titulo, palavra) != NULL) {
+            livros[numLivros++] = L;  // Armazena o livro no array
+        }
+    }
 
-        rewind(PtrLivros);
-        while (fread(&L, sizeof(struct Livros), 1, PtrLivros) == 1) {
-            if (strstr(L.titulo, palavra) != NULL) {  // Verifica se a palavra está no título
-                printf("ID: %d | Título: %s | Ano de Publicação: %d\n", L.id_livro, L.titulo, L.ano_publi);
+    if (numLivros == 0) {
+        printf("Nenhum livro encontrado com a palavra '%s'.\n", palavra);
+        fclose(Ptr);  // Fecha o arquivo antes de retornar
+        return;
+    }
+
+    // Ordenar os livros pelo ano de publicação (ordem crescente)
+    for (int i = 0; i < numLivros - 1; i++) {
+        for (int j = i + 1; j < numLivros; j++) {
+            if (livros[i].ano_publi > livros[j].ano_publi) {
+                // Troca de posições
+                Livros temp = livros[i];
+                livros[i] = livros[j];
+                livros[j] = temp;
             }
         }
-
-        fclose(PtrLivros);
     }
+
+    // Exibir o relatório ordenado
+    printf("Livros com títulos que contém a palavra '%s', ordenados pelo ano de publicação:\n", palavra);
+    for (int i = 0; i < numLivros; i++) {
+        printf("\nID do Livro: %d\n", livros[i].id_livro);
+        printf("Título: %s\n", livros[i].titulo);
+        printf("Ano de Publicação: %d\n", livros[i].ano_publi);
+        printf("Ativo: %d\n", livros[i].ativo);
+    }
+
+    fclose(Ptr);  // Fecha o arquivo após o uso
 }
+
 
 void ExibirEmprestimosPorPessoaDetalhado(FILE *PtrEmprestimos, FILE *PtrPessoas) {
     Emprestimo E;
@@ -1443,10 +1534,6 @@ void ExibirEmprestimosPorPessoaDetalhado(FILE *PtrEmprestimos, FILE *PtrPessoas)
         }
     }
 }
-
-
-
-
 
 void ExibirEmprestimosPorPessoa(FILE *PtrEmprestimos, FILE *PtrPessoas, int id_pessoa) {
     Emprestimo E;
