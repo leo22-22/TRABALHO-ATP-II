@@ -507,12 +507,6 @@ void CadastroLivros(void)
     Livros L;
     FILE *Ptr = fopen("Livros.dat", "rb+");
 
-    if (Ptr == NULL) {
-        printf("Erro ao abrir o arquivo Livros.dat\n");
-        gotoxy(5, 15);
-        printf("Pressione qualquer tecla para sair...\n");
-        getch();
-    } else {
         textbackground(CYAN);
         textcolor(YELLOW);
         gotoxy(10, 3);
@@ -579,7 +573,6 @@ void CadastroLivros(void)
             printf("ID DO LIVRO: ");
             scanf("%d", &L.id_livro);
         }
-    }
     fclose(Ptr);
 }
 
@@ -588,12 +581,6 @@ void CadastroPessoa(void)
     Pessoa P;
     FILE *Ptr = fopen("Pessoas.dat", "rb+");
 
-    if (Ptr == NULL) {
-        printf("Erro ao abrir o arquivo Pessoas.dat\n");
-        gotoxy(5, 15);
-        printf("Pressione qualquer tecla para sair...\n");
-        getch();
-    } else {
         textbackground(CYAN);
         textcolor(YELLOW);
         gotoxy(10, 3);
@@ -656,7 +643,6 @@ void CadastroPessoa(void)
             printf("ID DA PESSOA: ");
             scanf("%d", &P.id_pessoa);
         }
-    }
 
     fclose(Ptr);
 }
