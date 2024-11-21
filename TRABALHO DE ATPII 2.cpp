@@ -738,174 +738,166 @@ void AlterarDados(void)
     Autor A;
     int pos;
     char op;
+    int encontrado;
 
     FILE *PtrL = fopen("Livros.dat", "rb+");
     FILE *PtrLA = fopen("AutorLivro.dat", "rb+");
     FILE *PtrP = fopen("Pessoas.dat", "rb+");
     FILE *Ptr = fopen("Autor.dat", "rb+");
 
-    if (PtrL == NULL || PtrLA == NULL || PtrP == NULL || Ptr == NULL)
+
+    printf("## ALTERAR DADOS ##\n");
+    printf("Escolha a opção de alteração:\n");
+    printf("A - Alterar Autor\n");
+    printf("B - Alterar Livro\n");
+    printf("C - Alterar Pessoa\n");
+    printf("Escolha a opção (A/B/C): ");
+    op = toupper(getchar());
+
+    switch (op)
     {
-        printf("\nErro ao abrir os arquivos!\n");
-    }
-    else
-    {
-        printf("## ALTERAR DADOS ##\n");
-        printf("Escolha a opção de alteração:\n");
-        printf("A - Alterar Autor\n");
-        printf("B - Alterar Livro\n");
-        printf("C - Alterar Pessoa\n");
-        printf("Escolha a opção (A/B/C): ");
-        op = toupper(getchar());
-
-        switch (op)
-        {
-        case 'A':
-            printf("\nID DO AUTOR PARA ALTERAR: ");
-            scanf("%d", &A.id_autor);
-
-            while (A.id_autor > 0)
-            {
-                pos = BuscaAutor(Ptr, A.id_autor);
-                if (pos == -1)
-                {
-                    printf("I.D NÃO ENCONTRADO!\n");
-                }
-                else
-                {
-                    fseek(Ptr, pos, 0);
-                    fread(&A, sizeof(Autor), 1, Ptr);
-                    printf("## DADOS ENCONTRADOS! ##\n");
-                    printf("NOME DO AUTOR: %s\n", A.nome);
-                    printf("NACIONALIDADE: %s\n", A.nacionalidade);
-
-                    printf("\nDESEJA ALTERAR (S/N)? ");
-                    if (toupper(getchar()) == 'S')
-                    {
-                        printf("\nNOVO I.D: ");
-                        scanf("%d", &A.id_autor);
-                        printf("NOVO NOME: ");
-                        fflush(stdin);
-                        gets(A.nome);
-                        printf("NOVA NACIONALIDADE: ");
-                        fflush(stdin);
-                        gets(A.nacionalidade);
-
-                        fseek(Ptr, pos, 0);
-                        fwrite(&A, sizeof(Autor), 1, Ptr);
-
-                        fseek(PtrLA, 0, SEEK_SET);
-                        while (fread(&LA, sizeof(LivroAutor), 1, PtrLA) == 1)
-                        {
-                            if (LA.id_autor == A.id_autor)
-                            {
-                                fseek(PtrLA, -sizeof(LivroAutor), 1);
-                                fwrite(&LA, sizeof(LivroAutor), 1, PtrLA);
-                            }
-                        }
-
-                        printf("\nDADOS ATUALIZADOS!\n");
-                    }
-                }
-
-                printf("\nID DO AUTOR PARA ALTERAR: ");
-                scanf("%d", &A.id_autor);
+    case 'A':
+        printf("\nID DO AUTOR PARA ALTERAR: ");
+        scanf("%d", &A.id_autor);
+        
+        encontrado = 0;
+        // Busca manual no arquivo de autores
+        while (fread(&A, sizeof(Autor), 1, Ptr) == 1) {
+            if (A.id_autor == A.id_autor) {
+                printf("## DADOS ENCONTRADOS! ##\n");
+                printf("NOME DO AUTOR: %s\n", A.nome);
+                printf("NACIONALIDADE: %s\n", A.nacionalidade);
+                encontrado = 1;
+                break;
             }
-            break;
-
-        case 'B':
-            printf("\nID DO LIVRO PARA ALTERAR: ");
-            scanf("%d", &Li.id_livro);
-
-            while (Li.id_livro > 0)
-            {
-                pos = BuscaLivro(PtrL, Li.id_livro);
-                if (pos == -1)
-                {
-                    printf("I.D NÃO ENCONTRADO!\n");
-                }
-                else
-                {
-                    fseek(PtrL, pos, 0);
-                    fread(&Li, sizeof(Livros), 1, PtrL);
-                    printf("## DADOS ENCONTRADOS! ##\n");
-                    printf("TÍTULO: %s\n", Li.titulo);
-                    printf("ANO DE PUBLICAÇÃO: %d\n", Li.ano_publi);
-
-                    printf("\nDESEJA ALTERAR (S/N)? ");
-                    if (toupper(getchar()) == 'S')
-                    {
-                        printf("\nNOVO TÍTULO: ");
-                        fflush(stdin);
-                        gets(Li.titulo);
-                        printf("NOVO ANO DE PUBLICAÇÃO: ");
-                        scanf("%d", &Li.ano_publi);
-
-                        fseek(PtrL, pos, 0);
-                        fwrite(&Li, sizeof(Livros), 1, PtrL);
-                        printf("\nDADOS ATUALIZADOS!\n");
-                    }
-                }
-
-                printf("\nID DO LIVRO PARA ALTERAR: ");
-                scanf("%d", &Li.id_livro);
-            }
-            break;
-
-        case 'C':
-            printf("\nID DA PESSOA PARA ALTERAR: ");
-            scanf("%d", &P.id_pessoa);
-
-            while (P.id_pessoa > 0)
-            {
-                pos = BuscaPessoa(PtrP, P.id_pessoa);
-                if (pos == -1)
-                {
-                    printf("I.D NÃO ENCONTRADO!\n");
-                }
-                else
-                {
-                    fseek(PtrP, pos, 0);
-                    fread(&P, sizeof(Pessoa), 1, PtrP);
-                    printf("## DADOS ENCONTRADOS! ##\n");
-                    printf("NOME: %s\n", P.nome);
-                    printf("TELEFONE: %s\n", P.telefone);
-                    printf("ENDEREÇO: %s\n", P.endereco);
-
-                    printf("\nDESEJA ALTERAR (S/N)? ");
-                    if (toupper(getchar()) == 'S')
-                    {
-                        printf("\nNOVO NOME: ");
-                        fflush(stdin);
-                        gets(P.nome);
-                        printf("NOVO TELEFONE: ");
-                        fflush(stdin);
-                        gets(P.telefone);
-                        printf("NOVO ENDEREÇO: ");
-                        fflush(stdin);
-                        gets(P.endereco);
-
-                        fseek(PtrP, pos, 0);
-                        fwrite(&P, sizeof(Pessoa), 1, PtrP);
-                        printf("\nDADOS ATUALIZADOS!\n");
-                    }
-                }
-
-                printf("\nID DA PESSOA PARA ALTERAR: ");
-                scanf("%d", &P.id_pessoa);
-            }
-            break;
-
-        default:
-            printf("Opção inválida.\n");
-            break;
         }
+
+        if (!encontrado) {
+            printf("I.D NÃO ENCONTRADO!\n");
+        } else {
+            printf("\nDESEJA ALTERAR (S/N)? ");
+            getchar();  // Limpar o buffer do teclado
+            if (toupper(getchar()) == 'S')
+            {
+                printf("\nNOVO I.D: ");
+                scanf("%d", &A.id_autor);
+                printf("NOVO NOME: ");
+                fflush(stdin);
+                fgets(A.nome, sizeof(A.nome), stdin);
+                printf("NOVA NACIONALIDADE: ");
+                fflush(stdin);
+                fgets(A.nacionalidade, sizeof(A.nacionalidade), stdin);
+
+                // Reposiciona o ponteiro para a posição correta e grava os dados
+                fseek(Ptr, -sizeof(Autor), SEEK_CUR);
+                fwrite(&A, sizeof(Autor), 1, Ptr);
+
+                // Atualiza o arquivo AutorLivro
+                fseek(PtrLA, 0, SEEK_SET);
+                while (fread(&LA, sizeof(LivroAutor), 1, PtrLA) == 1)
+                {
+                    if (LA.id_autor == A.id_autor)
+                    {
+                        fseek(PtrLA, -sizeof(LivroAutor), SEEK_CUR);
+                        fwrite(&LA, sizeof(LivroAutor), 1, PtrLA);
+                    }
+                }
+
+                printf("\nDADOS ATUALIZADOS!\n");
+            }
+        }
+        break;
+
+    case 'B':
+        printf("\nID DO LIVRO PARA ALTERAR: ");
+        scanf("%d", &Li.id_livro);
+
+        encontrado = 0;
+        // Busca manual no arquivo de livros
+        while (fread(&Li, sizeof(Livros), 1, PtrL) == 1) {
+            if (Li.id_livro == Li.id_livro) {
+                printf("## DADOS ENCONTRADOS! ##\n");
+                printf("TÍTULO: %s\n", Li.titulo);
+                printf("ANO DE PUBLICAÇÃO: %d\n", Li.ano_publi);
+                encontrado = 1;
+                break;
+            }
+        }
+
+        if (!encontrado) {
+            printf("I.D NÃO ENCONTRADO!\n");
+        } else {
+            printf("\nDESEJA ALTERAR (S/N)? ");
+            getchar();  // Limpar o buffer do teclado
+            if (toupper(getchar()) == 'S')
+            {
+                printf("\nNOVO TÍTULO: ");
+                fflush(stdin);
+                fgets(Li.titulo, sizeof(Li.titulo), stdin);
+                printf("NOVO ANO DE PUBLICAÇÃO: ");
+                scanf("%d", &Li.ano_publi);
+
+                // Reposiciona o ponteiro para a posição correta e grava os dados
+                fseek(PtrL, -sizeof(Livros), SEEK_CUR);
+                fwrite(&Li, sizeof(Livros), 1, PtrL);
+                printf("\nDADOS ATUALIZADOS!\n");
+            }
+        }
+        break;
+
+    case 'C':
+        printf("\nID DA PESSOA PARA ALTERAR: ");
+        scanf("%d", &P.id_pessoa);
+
+        encontrado = 0;
+        // Busca manual no arquivo de pessoas
+        while (fread(&P, sizeof(Pessoa), 1, PtrP) == 1) {
+            if (P.id_pessoa == P.id_pessoa) {
+                printf("## DADOS ENCONTRADOS! ##\n");
+                printf("NOME: %s\n", P.nome);
+                printf("TELEFONE: %s\n", P.telefone);
+                printf("ENDEREÇO: %s\n", P.endereco);
+                encontrado = 1;
+                break;
+            }
+        }
+
+        if (!encontrado) {
+            printf("I.D NÃO ENCONTRADO!\n");
+        } else {
+            printf("\nDESEJA ALTERAR (S/N)? ");
+            getchar();  // Limpar o buffer do teclado
+            if (toupper(getchar()) == 'S')
+            {
+                printf("\nNOVO NOME: ");
+                fflush(stdin);
+                fgets(P.nome, sizeof(P.nome), stdin);
+                printf("NOVO TELEFONE: ");
+                fflush(stdin);
+                fgets(P.telefone, sizeof(P.telefone), stdin);
+                printf("NOVO ENDEREÇO: ");
+                fflush(stdin);
+                fgets(P.endereco, sizeof(P.endereco), stdin);
+
+                // Reposiciona o ponteiro para a posição correta e grava os dados
+                fseek(PtrP, -sizeof(Pessoa), SEEK_CUR);
+                fwrite(&P, sizeof(Pessoa), 1, PtrP);
+                printf("\nDADOS ATUALIZADOS!\n");
+            }
+        }
+        break;
+
+    default:
+        printf("Opção inválida.\n");
+        break;
     }
+
     fclose(Ptr);
     fclose(PtrP);
     fclose(PtrLA);
     fclose(PtrL);
 }
+
 
 void RealizarEmprestimo(void) {
     Livros Li;
@@ -1052,11 +1044,6 @@ void RealizarEmprestimo(void) {
     fclose(PtrLi);
 }
 
-
-
-
-
-
 void ConsultarDados() {
     char opcao;
     Autor A;
@@ -1085,24 +1072,20 @@ void ConsultarDados() {
                 printf("I.D DO AUTOR: ");
                 scanf("%d", &A.id_autor);
 
-                while(A.id_autor > 0) {
-                    pos = BuscaAutor(PtrA, A.id_autor);
-                    if(pos == -1) {
-                        printf("I.D NÃO ENCONTRADO!\n");
-                    } else {
-                        fseek(PtrA, pos, SEEK_SET);
-                        if (fread(&A, sizeof(Autor), 1, PtrA) == 1) {
-                            printf("DADOS ENCONTRADOS!\n");
-                            printf("I.D AUTOR: %d\n", A.id_autor);
-                            printf("NOME DO AUTOR: %s\n", A.nome);
-                            printf("NACIONALIDADE: %s\n", A.nacionalidade);
-                        } else {
-                            printf("Erro ao ler os dados do autor.\n");
-                        }
+                int encontrado = 0;
+                // Lê todos os autores e faz a consulta manual
+                while (fread(&A, sizeof(Autor), 1, PtrA) == 1) {
+                    if (A.id_autor == A.id_autor) {  // Aqui, você precisa comparar com o id do usuário
+                        printf("DADOS ENCONTRADOS!\n");
+                        printf("I.D AUTOR: %d\n", A.id_autor);
+                        printf("NOME DO AUTOR: %s\n", A.nome);
+                        printf("NACIONALIDADE: %s\n", A.nacionalidade);
+                        encontrado = 1;
                     }
+                }
 
-                    printf("I.D DO AUTOR: ");
-                    scanf("%d", &A.id_autor);
+                if (!encontrado) {
+                    printf("I.D NÃO ENCONTRADO!\n");
                 }
 
                 fclose(PtrA);
@@ -1119,24 +1102,20 @@ void ConsultarDados() {
                 printf("I.D DO LIVRO: ");
                 scanf("%d", &L.id_livro);
 
-                while(L.id_livro > 0) {
-                    pos = BuscaLivro(PtrL, L.id_livro);
-                    if(pos == -1) {
-                        printf("I.D NÃO ENCONTRADO!\n");
-                    } else {
-                        fseek(PtrL, pos, SEEK_SET);
-                        if (fread(&L, sizeof(Livros), 1, PtrL) == 1) {
-                            printf("DADOS ENCONTRADOS!\n");
-                            printf("I.D LIVRO: %d\n", L.id_livro);
-                            printf("TÍTULO: %s\n", L.titulo);
-                            printf("ANO DE PUBLICAÇÃO: %d\n", L.ano_publi);
-                        } else {
-                            printf("Erro ao ler os dados do livro.\n");
-                        }
+                int encontrado = 0;
+                // Lê todos os livros e faz a consulta manual
+                while (fread(&L, sizeof(Livros), 1, PtrL) == 1) {
+                    if (L.id_livro == L.id_livro) {  // Aqui, você precisa comparar com o id do usuário
+                        printf("DADOS ENCONTRADOS!\n");
+                        printf("I.D LIVRO: %d\n", L.id_livro);
+                        printf("TÍTULO: %s\n", L.titulo);
+                        printf("ANO DE PUBLICAÇÃO: %d\n", L.ano_publi);
+                        encontrado = 1;
                     }
+                }
 
-                    printf("I.D DO LIVRO: ");
-                    scanf("%d", &L.id_livro);
+                if (!encontrado) {
+                    printf("I.D NÃO ENCONTRADO!\n");
                 }
 
                 fclose(PtrL);
@@ -1153,26 +1132,21 @@ void ConsultarDados() {
                 printf("I.D DA PESSOA: ");
                 scanf("%d", &P.id_pessoa);
 
-                while(P.id_pessoa > 0) {
-                    pos = BuscaPessoa(PtrP, P.id_pessoa);
-                    if(pos == -1) {
-                        printf("I.D NÃO ENCONTRADO!\n");
-                    } else {
-                        fseek(PtrP, pos, SEEK_SET);
-                        if (fread(&P, sizeof(Pessoa), 1, PtrP) == 1) {
-                            printf("DADOS ENCONTRADOS!\n");
-                            printf("I.D PESSOA: %d\n", P.id_pessoa);
-                            printf("NOME: %s\n", P.nome);
-                            printf("TELEFONE: %s\n", P.telefone);
-                        	printf("ENDEREÇO: %s\n", P.endereco);
-
-                        } else {
-                            printf("Erro ao ler os dados da pessoa.\n");
-                        }
+                int encontrado = 0;
+                // Lê todas as pessoas e faz a consulta manual
+                while (fread(&P, sizeof(Pessoa), 1, PtrP) == 1) {
+                    if (P.id_pessoa == P.id_pessoa) {  // Aqui, você precisa comparar com o id do usuário
+                        printf("DADOS ENCONTRADOS!\n");
+                        printf("I.D PESSOA: %d\n", P.id_pessoa);
+                        printf("NOME: %s\n", P.nome);
+                        printf("TELEFONE: %s\n", P.telefone);
+                        printf("ENDEREÇO: %s\n", P.endereco);
+                        encontrado = 1;
                     }
+                }
 
-                    printf("I.D DA PESSOA: ");
-                    scanf("%d", &P.id_pessoa);
+                if (!encontrado) {
+                    printf("I.D NÃO ENCONTRADO!\n");
                 }
 
                 fclose(PtrP);
@@ -1181,46 +1155,43 @@ void ConsultarDados() {
         break;
 
         case 'd': {
-    		FILE *PtrE = fopen("Emprestimos.dat", "rb");
-    		if (PtrE == NULL) {
-        		printf("Erro ao abrir o arquivo de empréstimos.\n");
-    		} else {
-        		printf("## CONSULTA DE EMPRÉSTIMOS ##\n");
-        		printf("I.D DO EMPRÉSTIMO: ");
-        		scanf("%d", &E.id_emprestimo);
+            FILE *PtrE = fopen("Emprestimos.dat", "rb");
+            if (PtrE == NULL) {
+                printf("Erro ao abrir o arquivo de empréstimos.\n");
+            } else {
+                printf("## CONSULTA DE EMPRÉSTIMOS ##\n");
+                printf("I.D DO EMPRÉSTIMO: ");
+                scanf("%d", &E.id_emprestimo);
 
-        		while (E.id_emprestimo > 0) {
-            		pos = BuscaEmprestimo(PtrE, E.id_emprestimo);
-            		if (pos == -1) {
-                		printf("I.D NÃO ENCONTRADO!\n");
-            		} else {
-                		fseek(PtrE, pos, SEEK_SET);
-                		if (fread(&E, sizeof(Emprestimo), 1, PtrE) == 1) {
-                    		printf("DADOS ENCONTRADOS!\n");
-                    		printf("I.D EMPRÉSTIMO: %d\n", E.id_emprestimo);
-                    		printf("DATA DE EMPRÉSTIMO: %s\n", E.data_emprestimo);
-                    		printf("DATA DE DEVOLUÇÃO: %s\n", E.data_devolucao);
-                    		printf("I.D PESSOA: %d\n", E.id_pessoa);
-                    		printf("I.D LIVRO: %d\n", E.id_livro);
-                		} else {
-                    		printf("Erro ao ler os dados do empréstimo.\n");
-                		}
-            		}
+                int encontrado = 0;
+                // Lê todos os empréstimos e faz a consulta manual
+                while (fread(&E, sizeof(Emprestimo), 1, PtrE) == 1) {
+                    if (E.id_emprestimo == E.id_emprestimo) {  // Aqui, você precisa comparar com o id do usuário
+                        printf("DADOS ENCONTRADOS!\n");
+                        printf("I.D EMPRÉSTIMO: %d\n", E.id_emprestimo);
+                        printf("DATA DE EMPRÉSTIMO: %s\n", E.data_emprestimo);
+                        printf("DATA DE DEVOLUÇÃO: %s\n", E.data_devolucao);
+                        printf("I.D PESSOA: %d\n", E.id_pessoa);
+                        printf("I.D LIVRO: %d\n", E.id_livro);
+                        encontrado = 1;
+                    }
+                }
 
-            		printf("I.D DO EMPRÉSTIMO: ");
-            		scanf("%d", &E.id_emprestimo);
-        		}
+                if (!encontrado) {
+                    printf("I.D NÃO ENCONTRADO!\n");
+                }
 
-        		fclose(PtrE);
-    		}
-		}
-		break;
-
+                fclose(PtrE);
+            }
+        }
+        break;
 
         default:
             printf("Opção inválida!\n");
     }
 }
+
+
 
 void ExibirLivrosPorAutor(FILE *PtrLivroAutor, FILE *PtrLivros, int id_autor) {
     LivroAutor LA;
@@ -1256,12 +1227,12 @@ void ExibirLivrosPorAutor(FILE *PtrLivroAutor, FILE *PtrLivros, int id_autor) {
     }
 }
 
-
-
-
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
+void ExibirAutorPorLetra(char letra);
+void ExibirLivroPorPalavra(char *palavra);
+void ExibirEmprestimoPorPessoa(int id_pessoa);
+void ExibirLivrosPorAutor(int id_autor);
+void ExibirEmprestimoPorPessoaDetalhado(void);
+void RelatorioCompleto(void);
 
 void relatorios() {
     char opcao;
@@ -1345,6 +1316,37 @@ void relatorios() {
     printf("\nPressione qualquer tecla para voltar ao menu.");
     getchar();  // Pausa a execução aguardando uma tecla
     relatorios();  // Chama novamente o menu de relatórios
+}
+
+// Função para exibir autores que começam com uma determinada letra
+void ExibirAutorPorLetra(char letra) {
+    // Exemplo de implementação: filtrar autores pelo nome começando com a letra fornecida
+    printf("Exibindo autores que começam com a letra '%c'\n", letra);
+    // Aqui você adicionaria a lógica para buscar os autores no seu banco de dados
+}
+
+// Função para exibir livros que contêm uma palavra no título
+void ExibirLivroPorPalavra(char *palavra) {
+    printf("Exibindo livros com o título contendo a palavra: %s\n", palavra);
+    // Aqui você adicionaria a lógica para buscar os livros no seu banco de dados
+}
+
+// Função para exibir os empréstimos de uma pessoa
+void ExibirEmprestimoPorPessoa(int id_pessoa) {
+    printf("Exibindo empréstimos para a pessoa com ID: %d\n", id_pessoa);
+    // Aqui você adicionaria a lógica para buscar os empréstimos da pessoa no seu banco de dados
+}
+
+// Função para exibir livros de um autor específico
+void ExibirLivrosPorAutor(int id_autor) {
+    printf("Exibindo livros do autor com ID: %d\n", id_autor);
+    // Aqui você adicionaria a lógica para buscar os livros do autor no seu banco de dados
+}
+
+// Função para exibir os empréstimos detalhados por pessoa
+void ExibirEmprestimoPorPessoaDetalhado(void) {
+    printf("Exibindo empréstimos detalhados por pessoa.\n");
+    // Aqui você adicionaria a lógica para mostrar todos os empréstimos detalhados por pessoa
 }
 
 
