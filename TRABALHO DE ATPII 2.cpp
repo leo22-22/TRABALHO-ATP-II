@@ -33,6 +33,7 @@ struct Pessoa{
 
 struct LivroAutor{
     int id_livro, id_autor;
+    int ativo;
 };
 
 void CriaArquivos(void) {
@@ -65,6 +66,10 @@ void ExclusaoLogica();
 void ExclusaoFisica();
 void AlterarDados();
 void ConsultarDados();
+void ExibirLivros(void);
+void ExibirPessoas(void);
+void ExibirAutores(void);
+void ExibirEmprestimos(void);
 
 void RelatorioAutoresPorLetra(char letra);
 void RelatorioLivrosPorPalavra(char *palavra);
@@ -78,115 +83,101 @@ void RelatorioPessoasCompleto();
 void RelatorioEmprestimosCompleto();
 
 void ExclusaoLogica(void) {
-    int pos;
     Livros L;
     Pessoa P;
     Autor A;
     Emprestimo E;
+
     FILE *PtrLi = fopen("Livros.dat", "rb+");
     FILE *PtrPe = fopen("Pessoas.dat", "rb+");
     FILE *PtrAu = fopen("Autores.dat", "rb+");
     FILE *PtrEm = fopen("Emprestimos.dat", "rb+");
 
-    if (PtrLi == NULL || PtrPe == NULL || PtrAu == NULL || PtrEm == NULL) {
-        printf("Erro de Abertura de Arquivo!\n");
-    } else {
-        char opcao;
-        printf("Escolha a opção de exclusão logica:\n");
-        printf("A - Excluir Livro\n");
-        printf("B - Excluir Pessoa\n");
-        printf("C - Excluir Autor\n");
-        printf("D - Excluir Empréstimo\n");
+    char opcao;
+    int id_excluir, exclusaoRealizada = 0; // Flag para indicar se uma exclusão foi realizada
+    printf("Escolha a opção de exclusão lógica:\n");
+    printf("A - Excluir Livro\n");
+    printf("B - Excluir Pessoa\n");
+    printf("C - Excluir Autor\n");
+    printf("D - Excluir Empréstimo\n");
 
-        printf("Escolha a opção (A/B/C/D): ");
-        opcao = toupper(getchar());
+    printf("Escolha a opção (A/B/C/D): ");
+    opcao = toupper(getchar());
+    getchar(); // Consome o '\n' residual após a leitura
 
-        switch (opcao) {
-        case 'A': 
+    switch (opcao) {
+        case 'A': // Excluir Livro
             printf("ID do Livro a Excluir: ");
-            scanf("%d", &L.id_livro);
-            pos = BuscaLivro(PtrLi, L.id_livro);
-            if (pos == -1) {
-                printf("Livro nao Cadastrado!\n");
-            } else {
-                fseek(PtrLi, pos, SEEK_SET);
-                fread(&L, sizeof(Livros), 1, PtrLi);
-                if (L.ativo == 0) {
-                    printf("Livro ja esta inativo!\n");
-                } else {
-                    L.ativo = 0;
-                    fseek(PtrLi, pos, SEEK_SET);
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            while (fread(&L, sizeof(Livros), 1, PtrLi) == 1) {
+                if (L.id_livro == id_excluir) {
+                    L.ativo = 0; // Marca como inativo
+                    fseek(PtrLi, -sizeof(Livros), SEEK_CUR); // Volta o ponteiro para reescrever
                     fwrite(&L, sizeof(Livros), 1, PtrLi);
-                    printf("Livro excluido logicamente!\n");
+                    exclusaoRealizada = 1;
                 }
             }
             break;
 
-        case 'B': 
+        case 'B': // Excluir Pessoa
             printf("ID da Pessoa a Excluir: ");
-            scanf("%d", &P.id_pessoa);
-            pos = BuscaPessoa(PtrPe, P.id_pessoa);
-            if (pos == -1) {
-                printf("Pessoa nao Cadastrada!\n");
-            } else {
-                fseek(PtrPe, pos, SEEK_SET);
-                fread(&P, sizeof(Pessoa), 1, PtrPe);
-                if (P.ativo == 0) {
-                    printf("Pessoa ja esta inativa!\n");
-                } else {
-                    P.ativo = 0;
-                    fseek(PtrPe, pos, SEEK_SET);
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            while (fread(&P, sizeof(Pessoa), 1, PtrPe) == 1) {
+                if (P.id_pessoa == id_excluir) {
+                    P.ativo = 0; // Marca como inativo
+                    fseek(PtrPe, -sizeof(Pessoa), SEEK_CUR); // Volta o ponteiro para reescrever
                     fwrite(&P, sizeof(Pessoa), 1, PtrPe);
-                    printf("Pessoa excluida logicamente!\n");
+                    exclusaoRealizada = 1;
                 }
             }
             break;
 
-        case 'C': 
+        case 'C': // Excluir Autor
             printf("ID do Autor a Excluir: ");
-            scanf("%d", &A.id_autor);
-            pos = BuscaAutor(PtrAu, A.id_autor);
-            if (pos == -1) {
-                printf("Autor nao Cadastrado!\n");
-            } else {
-                fseek(PtrAu, pos, SEEK_SET);
-                fread(&A, sizeof(Autor), 1, PtrAu);
-                if (A.ativo == 0) {
-                    printf("Autor ja esta inativo!\n");
-                } else {
-                    A.ativo = 0;
-                    fseek(PtrAu, pos, SEEK_SET);
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            while (fread(&A, sizeof(Autor), 1, PtrAu) == 1) {
+                if (A.id_autor == id_excluir) {
+                    A.ativo = 0; // Marca como inativo
+                    fseek(PtrAu, -sizeof(Autor), SEEK_CUR); // Volta o ponteiro para reescrever
                     fwrite(&A, sizeof(Autor), 1, PtrAu);
-                    printf("Autor excluido logicamente!\n");
+                    exclusaoRealizada = 1;
                 }
             }
             break;
 
-        case 'D': 
-            printf("ID do Emprestimo a Excluir: ");
-            scanf("%d", &E.id_emprestimo);
-            pos = BuscaEmprestimo(PtrEm, E.id_emprestimo);
-            if (pos == -1) {
-                printf("Emprestimo nao Cadastrado!\n");
-            } else {
-                fseek(PtrEm, pos, SEEK_SET);
-                fread(&E, sizeof(Emprestimo), 1, PtrEm);
-                if (E.ativo == 0) {
-                    printf("Emprestimo ja esta inativo!\n");
-                } else {
-                    E.ativo = 0;
-                    fseek(PtrEm, pos, SEEK_SET);
+        case 'D': // Excluir Empréstimo
+            printf("ID do Empréstimo a Excluir: ");
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            while (fread(&E, sizeof(Emprestimo), 1, PtrEm) == 1) {
+                if (E.id_emprestimo == id_excluir) {
+                    E.ativo = 0; // Marca como inativo
+                    fseek(PtrEm, -sizeof(Emprestimo), SEEK_CUR); // Volta o ponteiro para reescrever
                     fwrite(&E, sizeof(Emprestimo), 1, PtrEm);
-                    printf("Emprestimo excluido logicamente!\n");
+                    exclusaoRealizada = 1;
                 }
             }
             break;
 
         default:
-            printf("Opcao Invalida!\n");
+            printf("Opção Inválida!\n");
             break;
-        }
     }
+
+    if (exclusaoRealizada) {
+        printf("Exclusão lógica realizada com sucesso!\n");
+    } else {
+        printf("Não foi possível realizar a exclusão!\n");
+    }
+
+    // Fecha os arquivos
     fclose(PtrLi);
     fclose(PtrPe);
     fclose(PtrAu);
@@ -194,161 +185,241 @@ void ExclusaoLogica(void) {
 }
 
 void ExclusaoFisica(void) {
-    int pos;
     Livros L;
     Pessoa P;
     Autor A;
     Emprestimo E;
-    FILE *PtrLi = fopen("Livros.dat", "r+b");
-    FILE *PtrPe = fopen("Pessoas.dat", "r+b");
-    FILE *PtrAu = fopen("Autores.dat", "r+b");
-    FILE *PtrEm = fopen("Emprestimos.dat", "r+b");
+    LivroAutor LA;
 
-    if (PtrLi == NULL || PtrPe == NULL || PtrAu == NULL || PtrEm == NULL) {
-        printf("Erro de Abertura de Arquivo!\n");
-    } else {
-        char opcao;
-        printf("Escolha a opção de exclusão fisica:\n");
-        printf("A - Excluir Livro\n");
-        printf("B - Excluir Pessoa\n");
-        printf("C - Excluir Autor\n");
-        printf("D - Excluir Empréstimo\n");
+    FILE *PtrLi = fopen("Livros.dat", "rb+");
+    FILE *PtrPe = fopen("Pessoas.dat", "rb+");
+    FILE *PtrAu = fopen("Autores.dat", "rb+");
+    FILE *PtrEm = fopen("Emprestimos.dat", "rb+");
+    FILE *PtrLa = fopen("LivroAutor.dat", "rb+");
 
-        printf("Escolha a opção (A/B/C/D): ");
-        opcao = toupper(getchar());
+    FILE *PtrTempLi, *PtrTempPe, *PtrTempAu, *PtrTempEm, *PtrTempLa;
 
-        switch (opcao) {
-        case 'A': // Excluir Livro
+
+    char opcao;
+    printf("Escolha a opção de exclusão física:\n");
+    printf("A - Excluir Livro\n");
+    printf("B - Excluir Pessoa\n");
+    printf("C - Excluir Autor\n");
+    printf("D - Excluir Empréstimo\n");
+
+    printf("Escolha a opção (A/B/C/D): ");
+    opcao = toupper(getchar());
+    getchar();  // Consome o '\n' residual após a leitura
+
+    switch (opcao) {
+        case 'A': {
+            int id_excluir;
             printf("ID do Livro a Excluir: ");
-            scanf("%d", &L.id_livro);
-            pos = BuscaLivro(PtrLi, L.id_livro);
-            if (pos == -1) {
-                printf("Livro nao Cadastrado!\n");
-            } else {
-                fseek(PtrLi, pos, SEEK_SET);
-                fread(&L, sizeof(Livros), 1, PtrLi);
-                printf("Dados do Livro:\n");
-                printf("ID Livro: %d\n", L.id_livro);
-                printf("Titulo: %s\n", L.titulo);
-                printf("Ano de Publicacao: %d\n", L.ano_publi);
-                printf("Confirma Exclusao Fisica de Livro (S/N)? ");
-                if (toupper(getchar()) == 'S') {
-                    rewind(PtrLi); 
-                    FILE *PtrTempLi = fopen("TempLivros.dat", "wb");
-                    while (fread(&L, sizeof(Livros), 1, PtrLi) == 1) {
-                        if (L.id_livro != L.id_livro) 
-                            fwrite(&L, sizeof(Livros), 1, PtrTempLi);
-                    }
-                    fclose(PtrLi);
-                    fclose(PtrTempLi);
-                    remove("Livros.dat");
-                    rename("TempLivros.dat", "Livros.dat");
-                    printf("Livro excluido fisicamente!\n");
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            PtrTempLi = fopen("TempLivros.dat", "wb");
+            PtrTempLa = fopen("TempLivroAutor.dat", "wb");
+
+            while (fread(&L, sizeof(Livros), 1, PtrLi) == 1) {
+                if (L.id_livro != id_excluir) {
+                    fwrite(&L, sizeof(Livros), 1, PtrTempLi);
                 }
             }
-            break;
 
-        case 'B': // Excluir Pessoa
-            printf("ID da Pessoa a Excluir: ");
-            scanf("%d", &P.id_pessoa);
-            pos = BuscaPessoa(PtrPe, P.id_pessoa);
-            if (pos == -1) {
-                printf("Pessoa nao Cadastrada!\n");
-            } else {
-                fseek(PtrPe, pos, SEEK_SET);
-                fread(&P, sizeof(Pessoa), 1, PtrPe);
-                printf("Dados da Pessoa:\n");
-                printf("ID Pessoa: %d\n", P.id_pessoa);
-                printf("Nome: %s\n", P.nome);
-                printf("Endereco: %s\n", P.endereco);
-                printf("Confirma Exclusao Fisica de Pessoa (S/N)? ");
-                if (toupper(getchar()) == 'S') {
-                    rewind(PtrPe); 
-                    FILE *PtrTempPe = fopen("TempPessoas.dat", "wb");
-                    while (fread(&P, sizeof(Pessoa), 1, PtrPe) == 1) {
-                        if (P.id_pessoa != P.id_pessoa)
-                            fwrite(&P, sizeof(Pessoa), 1, PtrTempPe);
-                    }
-                    fclose(PtrPe);
-                    fclose(PtrTempPe);
-                    remove("Pessoas.dat");
-                    rename("TempPessoas.dat", "Pessoas.dat");
-                    printf("Pessoa excluida fisicamente!\n");
+            while (fread(&LA, sizeof(LivroAutor), 1, PtrLa) == 1) {
+                if (LA.id_livro != id_excluir) {
+                    fwrite(&LA, sizeof(LivroAutor), 1, PtrTempLa);
                 }
             }
-            break;
 
-        case 'C': // Excluir Autor
-            printf("ID do Autor a Excluir: ");
-            scanf("%d", &A.id_autor);
-            pos = BuscaAutor(PtrAu, A.id_autor);
-            if (pos == -1) {
-                printf("Autor nao Cadastrado!\n");
-            } else {
-                fseek(PtrAu, pos, SEEK_SET);
-                fread(&A, sizeof(Autor), 1, PtrAu);
-                printf("Dados do Autor:\n");
-                printf("ID Autor: %d\n", A.id_autor);
-                printf("Nome: %s\n", A.nome);
-                printf("Nacionalidade: %s\n", A.nacionalidade);
-                printf("Confirma Exclusao Fisica de Autor (S/N)? ");
-                if (toupper(getchar()) == 'S') {
-                    rewind(PtrAu); 
-                    FILE *PtrTempAu = fopen("TempAutores.dat", "wb");
-                    while (fread(&A, sizeof(Autor), 1, PtrAu) == 1) {
-                        if (A.id_autor != A.id_autor)
-                            fwrite(&A, sizeof(Autor), 1, PtrTempAu);
-                    }
-                    fclose(PtrAu);
-                    fclose(PtrTempAu);
-                    remove("Autores.dat");
-                    rename("TempAutores.dat", "Autores.dat");
-                    printf("Autor excluido fisicamente!\n");
-                }
-            }
-            break;
+            printf("Livro excluído fisicamente!\n");
 
-        case 'D': // Excluir Emprestimo
-            printf("ID do Emprestimo a Excluir: ");
-            scanf("%d", &E.id_emprestimo);
-            pos = BuscaEmprestimo(PtrEm, E.id_emprestimo);
-            if (pos == -1) {
-                printf("Emprestimo nao Cadastrado!\n");
-            } else {
-                fseek(PtrEm, pos, SEEK_SET);
-                fread(&E, sizeof(Emprestimo), 1, PtrEm);
-                printf("Dados do Emprestimo:\n");
-                printf("ID Emprestimo: %d\n", E.id_emprestimo);
-                printf("ID Livro: %d\n", E.id_livro);
-                printf("ID Pessoa: %d\n", E.id_pessoa);
-                printf("Data Emprestimo: %s\n", E.data_emprestimo);
-                printf("Data Devolucao: %s\n", E.data_devolucao);
-                printf("Confirma Exclusao Fisica de Emprestimo (S/N)? ");
-                if (toupper(getchar()) == 'S') {
-                    rewind(PtrEm); 
-                    FILE *PtrTempEm = fopen("TempEmprestimos.dat", "wb");
-                    while (fread(&E, sizeof(Emprestimo), 1, PtrEm) == 1) {
-                        if (E.id_emprestimo != E.id_emprestimo)
-                            fwrite(&E, sizeof(Emprestimo), 1, PtrTempEm);
-                    }
-                    fclose(PtrEm);
-                    fclose(PtrTempEm);
-                    remove("Emprestimos.dat");
-                    rename("TempEmprestimos.dat", "Emprestimos.dat");
-                    printf("Emprestimo excluido fisicamente!\n");
-                }
-            }
-            break;
+            fclose(PtrLi);
+            fclose(PtrTempLi);
+            fclose(PtrLa);
+            fclose(PtrTempLa);
 
-        default:
-            printf("Opcao Invalida!\n");
+            remove("Livros.dat");
+            rename("TempLivros.dat", "Livros.dat");
+
+            remove("LivroAutor.dat");
+            rename("TempLivroAutor.dat", "LivroAutor.dat");
             break;
         }
+        case 'B': {
+            int id_excluir;
+            printf("ID da Pessoa a Excluir: ");
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            PtrTempPe = fopen("TempPessoas.dat", "wb");
+
+            while (fread(&P, sizeof(Pessoa), 1, PtrPe) == 1) {
+                if (P.id_pessoa != id_excluir) {
+                    fwrite(&P, sizeof(Pessoa), 1, PtrTempPe);
+                }
+            }
+
+            printf("Pessoa excluída fisicamente!\n");
+
+            fclose(PtrPe);
+            fclose(PtrTempPe);
+
+            remove("Pessoas.dat");
+            rename("TempPessoas.dat", "Pessoas.dat");
+            break;
+        }
+        case 'C': {
+            int id_excluir;
+            printf("ID do Autor a Excluir: ");
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            PtrTempAu = fopen("TempAutores.dat", "wb");
+
+            while (fread(&A, sizeof(Autor), 1, PtrAu) == 1) {
+                if (A.id_autor != id_excluir) {
+                    fwrite(&A, sizeof(Autor), 1, PtrTempAu);
+                }
+            }
+
+            printf("Autor excluído fisicamente!\n");
+
+            fclose(PtrAu);
+            fclose(PtrTempAu);
+
+            remove("Autores.dat");
+            rename("TempAutores.dat", "Autores.dat");
+            break;
+        }
+        case 'D': {
+            int id_excluir;
+            printf("ID do Empréstimo a Excluir: ");
+            scanf("%d", &id_excluir);
+            getchar(); // Consome o '\n' residual
+
+            PtrTempEm = fopen("TempEmprestimos.dat", "wb");
+
+            while (fread(&E, sizeof(Emprestimo), 1, PtrEm) == 1) {
+                if (E.id_emprestimo != id_excluir) {
+                    fwrite(&E, sizeof(Emprestimo), 1, PtrTempEm);
+                }
+            }
+
+            printf("Empréstimo excluído fisicamente!\n");
+
+            fclose(PtrEm);
+            fclose(PtrTempEm);
+
+            remove("Emprestimos.dat");
+            rename("TempEmprestimos.dat", "Emprestimos.dat");
+            break;
+        }
+        default:
+            printf("Opção Inválida!\n");
+            break;
     }
-    fclose(PtrLi);
-    fclose(PtrPe);
-    fclose(PtrAu);
-    fclose(PtrEm);
+}
+
+
+void ExibirLivros(void) {
+    Livros L;
+    FILE *Ptr = fopen("Livros.dat", "rb");
+
+    // Inicializa a leitura do arquivo
+    while (fread(&L, sizeof(Livros), 1, Ptr)) {
+        // Exibe os dados de cada livro
+        printf("ID: %d\n", L.id_livro);
+        printf("Título: %s\n", L.titulo);
+        printf("Ano de Publicação: %d\n", L.ano_publi);
+        printf("-----------------------------\n");
+    }
+
+    fclose(Ptr);
+}
+
+
+void ExibirPessoas(void)
+{
+    Pessoa P;
+    FILE *Ptr = fopen("Pessoas.dat", "rb");
+	
+    printf("## PESSOAS CADASTRADAS ##\n");
+    while (fread(&P, sizeof(Pessoa), 1, Ptr)) {
+        printf("ID: %d\n", P.id_pessoa);
+        printf("Nome: %s\n", P.nome);
+        printf("Telefone: %s\n", P.telefone);
+        printf("Endereço: %s\n", P.endereco);
+    }
+
+    fclose(Ptr);
+}
+
+void ExibirAutores(void)
+{
+    Autor A;
+    FILE *Ptr = fopen("Autor.dat", "rb");
+
+    printf("## AUTORES CADASTRADOS ##\n");
+    while (fread(&A, sizeof(Autor), 1, Ptr)) {
+        printf("ID: %d\n", A.id_autor);
+        printf("Nome: %s\n", A.nome);
+        printf("Nacionalidade: %s\n", A.nacionalidade);
+    }
+
+    fclose(Ptr);
+}
+
+void MenuExibirCadastros(void) {
+    int opcao;
+
+    do {
+        printf("\n## MENU DE EXIBIÇÃO DE CADASTROS ##\n");
+        printf("1. Exibir Livros\n");
+        printf("2. Exibir Pessoas\n");
+        printf("3. Exibir Autores\n");
+        printf("4. Exibir Empréstimos\n");
+        printf("5. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch(opcao) {
+            case 1:
+                ExibirLivros();
+                break;
+            case 2:
+                ExibirPessoas();
+                break;
+            case 3:
+                ExibirAutores();
+                break;
+            case 4:
+                ExibirEmprestimos();
+                break;
+            case 5:
+                printf("Saindo...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (opcao != 5);
+}
+
+void ExibirEmprestimos(void) {
+    Emprestimo E;
+    FILE *Ptr = fopen("Emprestimos.dat", "rb");
+
+    printf("\n## EMPRÉSTIMOS REALIZADOS ##\n");
+    while (fread(&E, sizeof(Emprestimo), 1, Ptr)) {
+        printf("ID do Empréstimo: %d\n", E.id_emprestimo);
+        printf("Pessoa ID: %d\n", E.id_pessoa);
+        printf("Livro ID: %d\n", E.id_livro);
+        printf("Data de Empréstimo: %s\n", E.data_emprestimo);
+        printf("Data de Devolução: %s\n\n", E.data_devolucao);
+    }
+
+    fclose(Ptr);
 }
 
 int BuscaLivro(FILE *Ptr, int id_livro)
@@ -364,16 +435,17 @@ int BuscaLivro(FILE *Ptr, int id_livro)
 }
 
 
-int BuscaAutor(FILE *Ptr, int ChaveID) {
-    Autor A;
-    rewind(Ptr); 
-    while (fread(&A, sizeof(Autor), 1, Ptr) == 1) {  
-        if (ChaveID == A.id_autor) {
-            return ftell(Ptr) - sizeof(Autor);  
+int BuscaAutor(FILE *PtrAu, int id_autor) {
+    Autor Au;
+    fseek(PtrAu, 0, SEEK_SET);  // Iniciar no começo do arquivo
+    while (fread(&Au, sizeof(Autor), 1, PtrAu)) {
+        if (Au.id_autor == id_autor) {
+            return 1; // Autor encontrado
         }
     }
-    return -1;  
+    return -1;  // Autor não encontrado
 }
+
 
 int BuscaAutorPorLivro(FILE *Ptr, int id_livro) {
     LivroAutor LA;
@@ -411,7 +483,7 @@ int BuscaEmprestimo(FILE *Ptr, int ChaveID) {
 void CadastroLivros(void)
 {
     Livros L;
-    FILE *Ptr = fopen("Livros.dat", "rb+");  // Abre o arquivo para leitura e escrita
+    FILE *Ptr = fopen("Livros.dat", "wb+");  // Abre o arquivo para leitura e escrita
 
     printf("## CADASTRO DE LIVROS ##\n");
     printf("ID DO LIVRO: ");
@@ -582,6 +654,8 @@ void CadastroLivroAutor(void)
     FILE *PtrLi = fopen("Livros.dat", "rb+");
     FILE *PtrAu = fopen("Autores.dat", "rb+");
 
+
+
     printf("## CADASTRO LIVRO-AUTOR ##\n");
 
     // Solicitar ID do livro
@@ -590,16 +664,32 @@ void CadastroLivroAutor(void)
 
     while (Li.id_livro > 0)
     {
-        if (BuscaLivro(PtrLi, Li.id_livro) == -1) {
-            printf("LIVRO NÃO ENCONTRADO!\n");
-        } else {
+        // Buscar livro manualmente
+        fseek(PtrLi, 0, SEEK_SET);  // Começar a leitura do começo do arquivo
+        int livroEncontrado = 0;  // Flag para verificar se o livro foi encontrado
+        while (fread(&Li, sizeof(Livros), 1, PtrLi)) {
+            if (Li.id_livro == Li.id_livro) {  // Comparando o id do livro
+                livroEncontrado = 1;
+                break;  // Livro encontrado, parar a busca
+            }
+        }
+
+        if (livroEncontrado) {
             // Solicitar ID do autor
             printf("ID DO AUTOR: ");
             scanf("%d", &Au.id_autor);
 
-            if (BuscaAutor(PtrAu, Au.id_autor) == -1) {
-                printf("AUTOR NÃO ENCONTRADO!\n");
-            } else {
+            // Buscar autor manualmente
+            fseek(PtrAu, 0, SEEK_SET);  // Começar a leitura do começo do arquivo
+            int autorEncontrado = 0;  // Flag para verificar se o autor foi encontrado
+            while (fread(&Au, sizeof(Autor), 1, PtrAu)) {
+                if (Au.id_autor == Au.id_autor) {  // Comparando o id do autor
+                    autorEncontrado = 1;
+                    break;  // Autor encontrado, parar a busca
+                }
+            }
+
+            if (autorEncontrado) {
                 // Associar livro ao autor
                 La.id_livro = Li.id_livro;
                 La.id_autor = Au.id_autor;
@@ -608,7 +698,11 @@ void CadastroLivroAutor(void)
                 fseek(PtrLa, 0, SEEK_END);  
                 fwrite(&La, sizeof(LivroAutor), 1, PtrLa);
                 printf("ASSOCIAÇÃO LIVRO-AUTOR CADASTRADA!\n");
+            } else {
+                printf("AUTOR NÃO ENCONTRADO!\n");
             }
+        } else {
+            printf("LIVRO NÃO ENCONTRADO!\n");
         }
 
         // Pedir novo ID do livro
@@ -620,6 +714,9 @@ void CadastroLivroAutor(void)
     fclose(PtrAu);
     fclose(PtrLa);
 }
+
+
+
 
 
 
@@ -809,34 +906,64 @@ void RealizarEmprestimo(void) {
     FILE *PtrEm = fopen("Emprestimos.dat", "ab+");
     FILE *PtrPe = fopen("Pessoas.dat", "rb");
 
+    if (PtrLi == NULL || PtrEm == NULL || PtrPe == NULL) {
+        printf("Erro ao abrir arquivos.\n");
+        return;
+    }
+
     printf("## EFETUAR EMPRÉSTIMOS ##\n");
 
     printf("I.D PESSOA: ");
     scanf("%d", &P.id_pessoa);
 
-    if (BuscaPessoa(PtrPe, P.id_pessoa) != 1) {
+    // Buscar manualmente a pessoa no arquivo
+    int pessoaEncontrada = 0;
+    fseek(PtrPe, 0, SEEK_SET);  // Volta ao início do arquivo para a leitura correta
+
+    while (fread(&P, sizeof(Pessoa), 1, PtrPe)) {
+        if (P.id_pessoa == P.id_pessoa) {  // Se o ID da pessoa no arquivo for igual ao ID fornecido
+            pessoaEncontrada = 1;  // Marca que a pessoa foi encontrada
+            break;  // Não precisa continuar a busca depois de encontrar
+        }
+    }
+
+    if (pessoaEncontrada) {
         printf("## PESSOA ENCONTRADA! ##\n");
         printf("I.D: %d\n", P.id_pessoa);
         printf("NOME: %s\n", P.nome);
         printf("TELEFONE: %s\n", P.telefone);
         printf("ENDEREÇO: %s\n", P.endereco);
 
+        // Pergunta se a pessoa deseja realizar o empréstimo
         printf("REALIZAR EMPRÉSTIMO (S/N)? ");
         if (toupper(getche()) == 'S') {
             printf("I.D DO LIVRO PARA EMPRÉSTIMO: ");
             scanf("%d", &Li.id_livro);
 
-            if (BuscaLivro(PtrLi, Li.id_livro) != 1) {
+            // Buscar manualmente o livro no arquivo
+            int livroEncontrado = 0;
+            fseek(PtrLi, 0, SEEK_SET);  // Volta ao início do arquivo para a leitura correta
+
+            while (fread(&Li, sizeof(Livros), 1, PtrLi)) {
+                if (Li.id_livro == Li.id_livro) {  // Se o ID do livro no arquivo for igual ao ID fornecido
+                    livroEncontrado = 1;  // Marca que o livro foi encontrado
+                    break;  // Não precisa continuar a busca depois de encontrar
+                }
+            }
+
+            if (livroEncontrado) {
                 printf("LIVRO ENCONTRADO!\n");
                 printf("I.D: %d\n", Li.id_livro);
                 printf("TÍTULO: %s\n", Li.titulo);
                 printf("ANO DE PUBLICAÇÃO: %d\n", Li.ano_publi);
 
+                // Confirmação do empréstimo
                 printf("CONFIRMAR EMPRÉSTIMO DO LIVRO '%s' PARA '%s' (S/N)? ", Li.titulo, P.nome);
                 if (toupper(getche()) == 'S') {
-                    printf("Digite o ID do Empréstimo: ");
+                    printf("\nDigite o ID do Empréstimo: ");
                     scanf("%d", &Em.id_emprestimo);
 
+                    // Data do empréstimo
                     printf("QUAL O DIA DO EMPRÉSTIMO? ");
                     scanf("%d", &Em.dia);
                     printf("QUAL O MÊS DO EMPRÉSTIMO? ");
@@ -844,6 +971,7 @@ void RealizarEmprestimo(void) {
                     printf("QUAL O ANO DO EMPRÉSTIMO? ");
                     scanf("%d", &Em.ano);
 
+                    // Validação da data do empréstimo
                     if (Em.mes < 1 || Em.mes > 12) {
                         printf("MÊS INVÁLIDO! O MÊS DEVE SER ENTRE 1 E 12.\n");
                     } else {
@@ -866,6 +994,7 @@ void RealizarEmprestimo(void) {
                             sprintf(Em.data_emprestimo, "%02d/%02d/%04d", Em.dia, Em.mes, Em.ano);
                             fwrite(&Em, sizeof(Emprestimo), 1, PtrEm);
 
+                            // Data de devolução
                             printf("QUAL O DIA DA DEVOLUÇÃO DO EMPRÉSTIMO? ");
                             scanf("%d", &Em.dia);
                             printf("QUAL O MÊS DA DEVOLUÇÃO DO EMPRÉSTIMO? ");
@@ -873,6 +1002,7 @@ void RealizarEmprestimo(void) {
                             printf("QUAL O ANO DA DEVOLUÇÃO DO EMPRÉSTIMO? ");
                             scanf("%d", &Em.ano);
 
+                            // Validação da data de devolução
                             if (Em.mes < 1 || Em.mes > 12) {
                                 printf("MÊS INVÁLIDO! O MÊS DEVE SER ENTRE 1 E 12.\n");
                             } else {
@@ -892,41 +1022,29 @@ void RealizarEmprestimo(void) {
                                     printf("DIA INVÁLIDO! ESTE MÊS POSSUI APENAS %d DIAS.\n", diasNoMes);
                                 } else {
                                     sprintf(Em.data_devolucao, "%02d/%02d/%04d", Em.dia, Em.mes, Em.ano);
-
-                                    int emprestimoDia, emprestimoMes, emprestimoAno;
-                                    sscanf(Em.data_emprestimo, "%2d/%2d/%4d", &emprestimoDia, &emprestimoMes, &emprestimoAno);
-
-                                    // Verificação se a data de devolução é anterior à de empréstimo
-                                    if ((Em.ano < emprestimoAno) ||
-                                        (Em.ano == emprestimoAno && Em.mes < emprestimoMes) ||
-                                        (Em.ano == emprestimoAno && Em.mes == emprestimoMes && Em.dia < emprestimoDia)) {
-                                        printf("A DATA DE DEVOLUÇÃO NÃO PODE SER MENOR DO QUE A DE EMPRÉSTIMO!\n");
-                                    } else {
-                                        printf("EMPRÉSTIMO CONCEDIDO! DEVOLUÇÃO AGENDADA PARA: %s\n", Em.data_devolucao);
-                                        fwrite(&Em, sizeof(Emprestimo), 1, PtrEm);
-                                    }
+                                    fwrite(&Em, sizeof(Emprestimo), 1, PtrEm);
+                                    printf("Empréstimo realizado com sucesso!\n");
                                 }
                             }
                         }
                     }
-                } else {
-                    printf("EMPRÉSTIMO CANCELADO!\n");
                 }
             } else {
-                printf("LIVRO NÃO ENCONTRADO!\n");
+                printf("Livro não encontrado.\n");
             }
-        } else {
-            printf("EMPRÉSTIMO NÃO AUTORIZADO!\n");
         }
     } else {
-        printf("PESSOA NÃO ENCONTRADA!\n");
+        printf("Pessoa não encontrada.\n");
     }
 
-    fclose(PtrLi);
     fclose(PtrPe);
     fclose(PtrEm);
-    getchar(); // Espera a tecla ser pressionada para sair
+    fclose(PtrLi);
 }
+
+
+
+
 
 
 void ConsultarDados() {
@@ -1035,8 +1153,9 @@ void ConsultarDados() {
                             printf("DADOS ENCONTRADOS!\n");
                             printf("I.D PESSOA: %d\n", P.id_pessoa);
                             printf("NOME: %s\n", P.nome);
-                            printf("ENDEREÇO: %s\n", P.endereco);
                             printf("TELEFONE: %s\n", P.telefone);
+                        	printf("ENDEREÇO: %s\n", P.endereco);
+
                         } else {
                             printf("Erro ao ler os dados da pessoa.\n");
                         }
@@ -1052,75 +1171,83 @@ void ConsultarDados() {
         break;
 
         case 'd': {
-            FILE *PtrE = fopen("Emprestimos.dat", "rb");
-            if (PtrE == NULL) {
-                printf("Erro ao abrir o arquivo de empréstimos.\n");
-            } else {
-                printf("## CONSULTA DE EMPRÉSTIMOS ##\n");
-                printf("I.D DO EMPRÉSTIMO: ");
-                scanf("%d", &E.id_emprestimo);
+    		FILE *PtrE = fopen("Emprestimos.dat", "rb");
+    		if (PtrE == NULL) {
+        		printf("Erro ao abrir o arquivo de empréstimos.\n");
+    		} else {
+        		printf("## CONSULTA DE EMPRÉSTIMOS ##\n");
+        		printf("I.D DO EMPRÉSTIMO: ");
+        		scanf("%d", &E.id_emprestimo);
 
-                while(E.id_emprestimo > 0) {
-                    pos = BuscaEmprestimo(PtrE, E.id_emprestimo);
-                    if(pos == -1) {
-                        printf("I.D NÃO ENCONTRADO!\n");
-                    } else {
-                        fseek(PtrE, pos, SEEK_SET);
-                        if (fread(&E, sizeof(Emprestimo), 1, PtrE) == 1) {
-                            printf("DADOS ENCONTRADOS!\n");
-                            printf("I.D EMPRÉSTIMO: %d\n", E.id_emprestimo);
-                            printf("DATA DE EMPRÉSTIMO: %s\n", E.data_emprestimo);
-                            printf("DATA DE DEVOLUÇÃO: %s\n", E.data_devolucao);
-                        } else {
-                            printf("Erro ao ler os dados do empréstimo.\n");
-                        }
-                    }
+        		while (E.id_emprestimo > 0) {
+            		pos = BuscaEmprestimo(PtrE, E.id_emprestimo);
+            		if (pos == -1) {
+                		printf("I.D NÃO ENCONTRADO!\n");
+            		} else {
+                		fseek(PtrE, pos, SEEK_SET);
+                		if (fread(&E, sizeof(Emprestimo), 1, PtrE) == 1) {
+                    		printf("DADOS ENCONTRADOS!\n");
+                    		printf("I.D EMPRÉSTIMO: %d\n", E.id_emprestimo);
+                    		printf("DATA DE EMPRÉSTIMO: %s\n", E.data_emprestimo);
+                    		printf("DATA DE DEVOLUÇÃO: %s\n", E.data_devolucao);
+                    		printf("I.D PESSOA: %d\n", E.id_pessoa);
+                    		printf("I.D LIVRO: %d\n", E.id_livro);
+                		} else {
+                    		printf("Erro ao ler os dados do empréstimo.\n");
+                		}
+            		}
 
-                    printf("I.D DO EMPRÉSTIMO: ");
-                    scanf("%d", &E.id_emprestimo);
-                }
+            		printf("I.D DO EMPRÉSTIMO: ");
+            		scanf("%d", &E.id_emprestimo);
+        		}
 
-                fclose(PtrE);
-            }
-        }
-        break;
+        		fclose(PtrE);
+    		}
+		}
+		break;
+
 
         default:
             printf("Opção inválida!\n");
     }
 }
 
-void RelatorioEmprestimosSeparadosPorPessoa() {
-    struct Emprestimo E;
-    struct Pessoa P;
-    FILE *PtrEmprestimos = fopen("Emprestimos.dat", "rb+");
-    FILE *PtrPessoas = fopen("Pessoas.dat", "rb+");
+void ExibirLivrosPorAutor(FILE *PtrLivroAutor, FILE *PtrLivros, int id_autor) {
+    LivroAutor LA;
+    Livros L;
+    
+    // Verificar se o autor existe
+    if (BuscaAutor(PtrLivros, id_autor) == -1) {
+        printf("Autor não encontrado!\n");
+        return;
+    }
 
-    if (PtrEmprestimos == NULL || PtrPessoas == NULL) {
-        printf("Erro ao abrir arquivos de empréstimos ou pessoas!\n");
-    } else {
-        rewind(PtrPessoas);
-        while (fread(&P, sizeof(struct Pessoa), 1, PtrPessoas) == 1) {
-            printf("\n## Empréstimos de %s ##\n", P.nome);
-            rewind(PtrEmprestimos);
-            int encontrou = 0;
-            while (fread(&E, sizeof(struct Emprestimo), 1, PtrEmprestimos) == 1) {
-                if (E.id_pessoa == P.id_pessoa) {
-                    printf("ID: %d | Livro ID: %d | Data de Empréstimo: %s | Data de Devolução: %s\n",
-                           E.id_emprestimo, E.id_livro, E.data_emprestimo, E.data_devolucao);
-                    encontrou = 1;
-                }
-            }
-
-            if (!encontrou) {
-                printf("Nenhum empréstimo registrado.\n");
+    printf("Livros do autor %d:\n", id_autor);
+    
+    // Buscar todos os livros desse autor
+    fseek(PtrLivroAutor, 0, SEEK_SET);  // Voltar ao início do arquivo
+    int encontrado = 0;
+    while (fread(&LA, sizeof(LivroAutor), 1, PtrLivroAutor) == 1) {
+        if (LA.id_autor == id_autor) {
+            if (BuscaLivro(PtrLivros, LA.id_livro) == 1) {
+                fseek(PtrLivros, LA.id_livro * sizeof(Livros), SEEK_SET);  // Acessar o livro correspondente
+                fread(&L, sizeof(Livros), 1, PtrLivros);
+                encontrado = 1;
+                printf("\nID do Livro: %d\n", L.id_livro);
+                printf("Título: %s\n", L.titulo);
+                printf("Ano de Publicação: %d\n", L.ano_publi);
+                printf("Ativo: %d\n", L.ativo);
             }
         }
-
-        fclose(PtrEmprestimos);
-        fclose(PtrPessoas);
+    }
+    
+    if (!encontrado) {
+        printf("Nenhum livro encontrado para esse autor.\n");
     }
 }
+
+
+
 
 
 void relatorios() {
@@ -1286,54 +1413,72 @@ void RelatorioLivrosPorPalavra(char *palavra) {
     }
 }
 
-void RelatorioEmprestimosPorPessoa(int id_pessoa) {
+void ExibirEmprestimosPorPessoaDetalhado(FILE *PtrEmprestimos, FILE *PtrPessoas) {
     Emprestimo E;
-    FILE *PtrEmprestimos = fopen("Emprestimos.dat", "rb+");
+    Pessoa P;
 
-    if (PtrEmprestimos == NULL) {
-        printf("Erro ao abrir arquivo de empréstimos!\n");
-    } else {
-        printf("## Relatório de Empréstimos para Pessoa (ID: %d) ##\n", id_pessoa);
-
-        rewind(PtrEmprestimos);
-        while (fread(&E, sizeof(struct Emprestimo), 1, PtrEmprestimos) == 1) {
-            if (E.id_pessoa == id_pessoa) {  // Verifica se o empréstimo é para a pessoa
-                printf("ID: %d | Livro ID: %d | Data de Empréstimo: %s | Data de Devolução: %s\n",
-                       E.id_emprestimo, E.id_livro, E.data_emprestimo, E.data_devolucao);
+    fseek(PtrEmprestimos, 0, SEEK_SET);
+    fseek(PtrPessoas, 0, SEEK_SET);
+    
+    // Loop para percorrer todas as pessoas
+    while (fread(&P, sizeof(Pessoa), 1, PtrPessoas) == 1) {
+        printf("\nEmpréstimos de %s (ID: %d):\n", P.nome, P.id_pessoa);
+        int encontrouEmprestimos = 0;
+        
+        // Para cada pessoa, busca seus empréstimos
+        fseek(PtrEmprestimos, 0, SEEK_SET);
+        while (fread(&E, sizeof(Emprestimo), 1, PtrEmprestimos) == 1) {
+            if (E.id_pessoa == P.id_pessoa) {
+                encontrouEmprestimos = 1;
+                printf("\nID do Empréstimo: %d\n", E.id_emprestimo);
+                printf("ID do Livro: %d\n", E.id_livro);
+                printf("Data de Empréstimo: %s\n", E.data_emprestimo);
+                printf("Data de Devolução: %s\n", E.data_devolucao);
+                printf("Ativo: %d\n", E.ativo);
             }
         }
-
-        fclose(PtrEmprestimos);
+        
+        if (!encontrouEmprestimos) {
+            printf("Nenhum empréstimo encontrado.\n");
+        }
     }
 }
 
-void RelatorioLivrosPorAutor(int id_autor) {
-    LivroAutor LA;
-    Livros L;
-    FILE *PtrLivroAutor = fopen("LivroAutor.dat", "rb+");
-    FILE *PtrLivros = fopen("Livros.dat", "rb+");
 
-    if (PtrLivroAutor == NULL || PtrLivros == NULL) {
-        printf("Erro ao abrir arquivos de livros ou livro-autor!\n");
-    } else {
-        printf("## Relatório de Livros para Autor (ID: %d) ##\n", id_autor);
 
-        rewind(PtrLivroAutor);
-        while (fread(&LA, sizeof(struct LivroAutor), 1, PtrLivroAutor) == 1) {
-            if (LA.id_autor == id_autor) {
-                rewind(PtrLivros);
-                while (fread(&L, sizeof(struct Livros), 1, PtrLivros) == 1) {
-                    if (L.id_livro == LA.id_livro) {
-                        printf("ID: %d | Título: %s | Ano de Publicação: %d\n", L.id_livro, L.titulo, L.ano_publi);
-                    }
-                }
-            }
+
+
+void ExibirEmprestimosPorPessoa(FILE *PtrEmprestimos, FILE *PtrPessoas, int id_pessoa) {
+    Emprestimo E;
+    Pessoa P;
+    
+    // Verificar se a pessoa existe
+    if (BuscaPessoa(PtrPessoas, id_pessoa) == -1) {
+        printf("Pessoa não encontrada!\n");
+        return;
+    }
+
+    printf("Empréstimos realizados por %d:\n", id_pessoa);
+    
+    // Buscar todos os empréstimos dessa pessoa
+    fseek(PtrEmprestimos, 0, SEEK_SET);  // Voltar ao início do arquivo
+    int encontrado = 0;
+    while (fread(&E, sizeof(Emprestimo), 1, PtrEmprestimos) == 1) {
+        if (E.id_pessoa == id_pessoa) {
+            encontrado = 1;
+            printf("\nID do Empréstimo: %d\n", E.id_emprestimo);
+            printf("ID do Livro: %d\n", E.id_livro);
+            printf("Data de Empréstimo: %s\n", E.data_emprestimo);
+            printf("Data de Devolução: %s\n", E.data_devolucao);
+            printf("Ativo: %d\n", E.ativo);
         }
-
-        fclose(PtrLivroAutor);
-        fclose(PtrLivros);
+    }
+    
+    if (!encontrado) {
+        printf("Nenhum empréstimo encontrado para essa pessoa.\n");
     }
 }
+
 
 // Funções para Relatórios Completos (Autores, Livros, Pessoas, Empréstimos)
 void RelatorioAutoresCompleto() {
@@ -1412,7 +1557,7 @@ void RelatorioEmprestimosCompleto() {
 char Menu(void) {
     char op;
 
-    system("cls"); 
+    system("cls");  // Limpa a tela (funciona em sistemas Windows)
 
     // Exibe o título do menu
     printf("## MENU ##\n");
@@ -1422,12 +1567,13 @@ char Menu(void) {
     printf("[B] CADASTRAR AUTOR\n");
     printf("[C] CADASTRAR PESSOA\n");
     printf("[D] CADASTRAR LIVRO-AUTOR\n");
-    printf("[E] EXCLUSÃO LÓGICA\n");
-    printf("[F] EXCLUSÃO FÍSICA\n");
-    printf("[G] ALTERAÇÃO POR ID\n");
-    printf("[H] CONSULTAR POR ID\n");
-    printf("[I] RELATÓRIO\n");
-    printf("[J] REALIZAR EMPRÉSTIMO\n");
+    printf("[E] EXIBIR CADASTROS\n");
+    printf("[F] EXCLUSÃO LÓGICA\n");
+    printf("[G] EXCLUSÃO FÍSICA\n");
+    printf("[H] ALTERAÇÃO POR ID\n");
+    printf("[I] CONSULTAR POR ID\n");
+    printf("[J] RELATÓRIO\n");
+    printf("[K] REALIZAR EMPRÉSTIMO\n");
 
     printf("[0] PARA SAIR\n");
 
@@ -1439,8 +1585,9 @@ char Menu(void) {
 }
 
 int main(void) {
-    setlocale(LC_ALL,"Portuguese");
+    setlocale(LC_ALL, "Portuguese");  // Configura a localidade para português
     char op;
+
     do {
         op = Menu();  // Chama o menu e armazena a escolha
 
@@ -1463,29 +1610,38 @@ int main(void) {
                 CadastroLivroAutor();  
                 break;
             case 'E': 
+                // Chama a função para exibir os cadastros
+                MenuExibirCadastros();  
+                break;
+            case 'F': 
                 // Chama a função para exclusão lógica
                 ExclusaoLogica();  
                 break;
-            case 'F': 
+            case 'G': 
                 // Chama a função para exclusão física
                 ExclusaoFisica();  
                 break;
-            case 'G': 
+            case 'H': 
                 // Chama a função para alteração de dados
                 AlterarDados();  
                 break;
-            case 'H': 
+            case 'I': 
                 // Chama a função para consultar dados
                 ConsultarDados();  
                 break;
-            case 'I': 
+            case 'J': 
                 // Chama a função para relatórios
                 relatorios();  
                 break;
-            case 'J': 
+            case 'K': 
                 // Chama a função para realizar empréstimo
                 RealizarEmprestimo();  
                 break;
+            case '0': 
+                printf("Saindo...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
         }
 
         // Limpa o buffer de entrada (caso o usuário tenha pressionado enter extra)
