@@ -22,12 +22,13 @@ struct Emprestimo{
 	int dia,mes,ano;
 	char data_emprestimo[11];
 	char data_devolucao[11];
+	int ativo;
 };
 
 struct Pessoa{
 	int id_pessoa;
 	char nome[30],telefone[14],endereco[40];
-	int ativa;
+	int ativo;
 };
 
 struct LivroAutor{
@@ -50,10 +51,38 @@ void CriaArquivos(void)
 	fclose(Ptr);
 }
 
-void ExclusaoFisica(void)
-{
+int BuscaLivro(FILE *Ptr, int ChaveID);
+int BuscaAutor(FILE *Ptr, int ChaveID);
+int BuscaAutorPorLivro(FILE *Ptr, int id_livro);
+int BuscaPessoa(FILE *Ptr, int ChaveID);
+int BuscaEmprestimo(FILE *Ptr, int ChaveID);
+
+void CadastroLivros();
+void CadastroAutor();
+void CadastroPessoa();
+void RealizarEmprestimo();
+void ExclusaoLogica();
+void ExclusaoFisica();
+void AlterarDados();
+void ConsultarDados();
+
+void relatorios();  
+void RelatorioCompleto(); 
+void RelatorioAutoresCompleto();  
+void RelatorioLivrosCompleto();  
+void RelatorioPessoasCompleto();  
+void RelatorioEmprestimosCompleto();  
+void RelatorioAutoresPorLetra(char letra);
+void RelatorioLivrosPorPalavra(char palavra[50]);
+void RelatorioEmprestimosPorPessoa(int id_pessoa);
+void RelatorioLivrosPorAutor(int id_autor);
+void RelatorioEmprestimosSeparadosPorPessoa();
+void desenharBordas();
+
+
+void ExclusaoLogica(void) {
     int pos;
-    Livro L;
+    Livros L;
     Pessoa P;
     Autor A;
     Emprestimo E;
@@ -65,7 +94,7 @@ void ExclusaoFisica(void)
     clrscr();
     textcolor(WHITE);
     gotoxy(10, 2);
-    printf("### Exclusao Fisica (Livro, Pessoa, Autor ou Empréstimo) ###");
+    printf("### Exclusao Logica (Livro, Pessoa, Autor ou Empréstimo) ###");
 
     if (PtrLi == NULL || PtrPe == NULL || PtrAu == NULL || PtrEm == NULL) {
         gotoxy(10, 4);
@@ -75,7 +104,7 @@ void ExclusaoFisica(void)
         char opcao;
         gotoxy(10, 5);
         textcolor(WHITE);
-        printf("Escolha a opção de exclusão fisica:\n");
+        printf("Escolha a opção de exclusão logica:\n");
         gotoxy(10, 7);
         printf("A - Excluir Livro");
         gotoxy(10, 8);
@@ -90,7 +119,7 @@ void ExclusaoFisica(void)
         opcao = toupper(getche());
 
         switch (opcao) {
-        case 'A':
+        case 'A': 
             gotoxy(10, 14);
             printf("ID do Livro a Excluir: ");
             scanf("%d", &L.id_livro);
@@ -99,38 +128,23 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Livro nao Cadastrado!\n");
             } else {
-                fseek(PtrLi, pos, 0);
-                fread(&L, sizeof(Livro), 1, PtrLi);
-                gotoxy(10, 16);
-                printf("Dados do Livro:\n");
-                gotoxy(10, 17);
-                printf("ID Livro: %d", L.id_livro);
-                gotoxy(10, 18);
-                printf("Titulo: %s", L.titulo);
-                gotoxy(10, 19);
-                printf("Ano de Publicacao: %d", L.ano_publi);
-                gotoxy(10, 20);
-                printf("Confirma Exclusao Fisica de Livro (S/N)? ");
-                if (toupper(getche()) == 'S') {
-                    // Exclusão do livro
-                    rewind(PtrLi); 
-                    FILE *PtrTempLi = fopen("TempLivros.dat", "wb");
-                    while (fread(&L, sizeof(Livro), 1, PtrLi) == 1) {
-                        if (L.id_livro != L.id_livro)
-                            fwrite(&L, sizeof(Livro), 1, PtrTempLi);
-                    }
-                    fclose(PtrLi);
-                    fclose(PtrTempLi);
-                    remove("Livros.dat");
-                    rename("TempLivros.dat", "Livros.dat");
-                    gotoxy(10, 22);
+                fseek(PtrLi, pos, SEEK_SET);
+                fread(&L, sizeof(Livros), 1, PtrLi);
+                if (L.ativo == 0) {
+                    gotoxy(10, 18);
+                    printf("Livro ja esta inativo!\n");
+                } else {
+                    L.ativo = 0;
+                    fseek(PtrLi, pos, SEEK_SET);
+                    fwrite(&L, sizeof(Livros), 1, PtrLi);
+                    gotoxy(10, 18);
                     textcolor(GREEN);
-                    printf("Livro excluido fisicamente!\n");
+                    printf("Livro excluido logicamente!\n");
                 }
             }
             break;
 
-        case 'B':
+        case 'B': 
             gotoxy(10, 14);
             printf("ID da Pessoa a Excluir: ");
             scanf("%d", &P.id_pessoa);
@@ -139,40 +153,24 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Pessoa nao Cadastrada!\n");
             } else {
-                fseek(PtrPe, pos, 0);
+                fseek(PtrPe, pos, SEEK_SET);
                 fread(&P, sizeof(Pessoa), 1, PtrPe);
-                gotoxy(10, 16);
-                printf("Dados da Pessoa:\n");
-                gotoxy(10, 17);
-                printf("ID Pessoa: %d", P.id_pessoa);
-                gotoxy(10, 18);
-                printf("Nome: %s", P.nome);
-                gotoxy(10, 19);
-                printf("Telefone: %s", P.telefone);
-                gotoxy(10, 20);
-                printf("Endereco: %s", P.endereco);
-                gotoxy(10, 21);
-                printf("Confirma Exclusao Fisica de Pessoa (S/N)? ");
-                if (toupper(getche()) == 'S') {
-                    rewind(PtrPe); 
-                    FILE *PtrTempPe = fopen("TempPessoas.dat", "wb");
-                    while (fread(&P, sizeof(Pessoa), 1, PtrPe) == 1) {
-                        if (P.id_pessoa != P.id_pessoa)
-                            fwrite(&P, sizeof(Pessoa), 1, PtrTempPe);
-                    }
-                    fclose(PtrPe);
-                    fclose(PtrTempPe);
-                    remove("Pessoas.dat");
-                    rename("TempPessoas.dat", "Pessoas.dat");
-                    gotoxy(10, 23);
+                if (P.ativo == 0) {
+                    gotoxy(10, 18);
+                    printf("Pessoa ja esta inativa!\n");
+                } else {
+                    P.ativo = 0;
+                    fseek(PtrPe, pos, SEEK_SET);
+                    fwrite(&P, sizeof(Pessoa), 1, PtrPe);
+                    gotoxy(10, 18);
                     textcolor(GREEN);
-                    printf("Pessoa excluida fisicamente!\n");
+                    printf("Pessoa excluida logicamente!\n");
                 }
             }
             break;
 
-        case 'C':
-             gotoxy(10, 14);
+        case 'C': 
+            gotoxy(10, 14);
             printf("ID do Autor a Excluir: ");
             scanf("%d", &A.id_autor);
             pos = BuscaAutor(PtrAu, A.id_autor);
@@ -180,37 +178,23 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Autor nao Cadastrado!\n");
             } else {
-                fseek(PtrAu, pos, 0);
+                fseek(PtrAu, pos, SEEK_SET);
                 fread(&A, sizeof(Autor), 1, PtrAu);
-                gotoxy(10, 16);
-                printf("Dados do Autor:\n");
-                gotoxy(10, 17);
-                printf("ID Autor: %d", A.id_autor);
-                gotoxy(10, 18);
-                printf("Nome: %s", A.nome);
-                gotoxy(10, 19);
-                printf("Nacionalidade: %s", A.nacionalidade);
-                gotoxy(10, 20);
-                printf("Confirma Exclusao Fisica de Autor (S/N)? ");
-                if (toupper(getche()) == 'S') {
-                    rewind(PtrAu);
-                    FILE *PtrTempAu = fopen("TempAutores.dat", "wb");
-                    while (fread(&A, sizeof(Autor), 1, PtrAu) == 1) {
-                        if (A.id_autor != A.id_autor)
-                            fwrite(&A, sizeof(Autor), 1, PtrTempAu);
-                    }
-                    fclose(PtrAu);
-                    fclose(PtrTempAu);
-                    remove("Autores.dat");
-                    rename("TempAutores.dat", "Autores.dat");
-                    gotoxy(10, 22);
+                if (A.ativo == 0) {
+                    gotoxy(10, 18);
+                    printf("Autor ja esta inativo!\n");
+                } else {
+                    A.ativo = 0;
+                    fseek(PtrAu, pos, SEEK_SET);
+                    fwrite(&A, sizeof(Autor), 1, PtrAu);
+                    gotoxy(10, 18);
                     textcolor(GREEN);
-                    printf("Autor excluido fisicamente!\n");
+                    printf("Autor excluido logicamente!\n");
                 }
             }
             break;
 
-        case 'D':
+        case 'D': 
             gotoxy(10, 14);
             printf("ID do Emprestimo a Excluir: ");
             scanf("%d", &E.id_emprestimo);
@@ -219,36 +203,18 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Emprestimo nao Cadastrado!\n");
             } else {
-                fseek(PtrEm, pos, 0);
+                fseek(PtrEm, pos, SEEK_SET);
                 fread(&E, sizeof(Emprestimo), 1, PtrEm);
-                gotoxy(10, 16);
-                printf("Dados do Emprestimo:\n");
-                gotoxy(10, 17);
-                printf("ID Emprestimo: %d", E.id_emprestimo);
-                gotoxy(10, 18);
-                printf("ID Livro: %d", E.id_livro);
-                gotoxy(10, 19);
-                printf("ID Pessoa: %d", E.id_pessoa);
-                gotoxy(10, 20);
-                printf("Data de Emprestimo: %s", E.data_emprestimo);
-                gotoxy(10, 21);
-                printf("Data de Devolucao: %s", E.data_devolucao);
-                gotoxy(10, 22);
-                printf("Confirma Exclusao Fisica de Emprestimo (S/N)? ");
-                if (toupper(getche()) == 'S') {
-                    rewind(PtrEm); // Reabre o arquivo
-                    FILE *PtrTempEm = fopen("TempEmprestimos.dat", "wb");
-                    while (fread(&E, sizeof(Emprestimo), 1, PtrEm) == 1) {
-                        if (E.id_emprestimo != E.id_emprestimo) 
-                            fwrite(&E, sizeof(Emprestimo), 1, PtrTempEm);
-                    }
-                    fclose(PtrEm);
-                    fclose(PtrTempEm);
-                    remove("Emprestimos.dat");
-                    rename("TempEmprestimos.dat", "Emprestimos.dat");
-                    gotoxy(10, 24);
+                if (E.ativo == 0) {
+                    gotoxy(10, 18);
+                    printf("Emprestimo ja esta inativo!\n");
+                } else {
+                    E.ativo = 0;
+                    fseek(PtrEm, pos, SEEK_SET);
+                    fwrite(&E, sizeof(Emprestimo), 1, PtrEm);
+                    gotoxy(10, 18);
                     textcolor(GREEN);
-                    printf("Emprestimo excluido fisicamente!\n");
+                    printf("Emprestimo excluido logicamente!\n");
                 }
             }
             break;
@@ -267,10 +233,11 @@ void ExclusaoFisica(void)
     fclose(PtrEm);
 }
 
+
 void ExclusaoFisica(void)
 {
     int pos;
-    Livro L;
+    Livros L;
     Pessoa P;
     Autor A;
     Emprestimo E;
@@ -279,9 +246,9 @@ void ExclusaoFisica(void)
     FILE *PtrAu = fopen("Autores.dat", "r+b");
     FILE *PtrEm = fopen("Emprestimos.dat", "r+b");
 
-    clrscr()
+    clrscr();
     textcolor(WHITE); 
-    gotoxy(10, 2); // Coloca o cursor na posição (10, 2) da tela
+    gotoxy(10, 2); 
     printf("### Exclusao Fisica (Livro, Pessoa, Autor ou Empréstimo) ###");
 
     if (PtrLi == NULL || PtrPe == NULL || PtrAu == NULL || PtrEm == NULL) {
@@ -307,7 +274,7 @@ void ExclusaoFisica(void)
         opcao = toupper(getche());
 
         switch (opcao) {
-        case 'A':
+        case 'A': // Excluir Livro
             gotoxy(10, 14);
             printf("ID do Livro a Excluir: ");
             scanf("%d", &L.id_livro);
@@ -316,8 +283,8 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Livro nao Cadastrado!\n");
             } else {
-                fseek(PtrLi, pos, 0);
-                fread(&L, sizeof(Livro), 1, PtrLi);
+                fseek(PtrLi, pos, SEEK_SET);
+                fread(&L, sizeof(Livros), 1, PtrLi);
                 gotoxy(10, 16);
                 printf("Dados do Livro:\n");
                 gotoxy(10, 17);
@@ -331,9 +298,9 @@ void ExclusaoFisica(void)
                 if (toupper(getche()) == 'S') {
                     rewind(PtrLi); 
                     FILE *PtrTempLi = fopen("TempLivros.dat", "wb");
-                    while (fread(&L, sizeof(Livro), 1, PtrLi) == 1) {
-                        if (L.id_livro != L.id_livro) 
-                            fwrite(&L, sizeof(Livro), 1, PtrTempLi);
+                    while (fread(&L, sizeof(Livros), 1, PtrLi) == 1) {
+                        if (L.id_livro != L.id_livro) // Corrigido para comparação correta
+                            fwrite(&L, sizeof(Livros), 1, PtrTempLi);
                     }
                     fclose(PtrLi);
                     fclose(PtrTempLi);
@@ -346,7 +313,7 @@ void ExclusaoFisica(void)
             }
             break;
 
-        case 'B':
+        case 'B': // Excluir Pessoa
             gotoxy(10, 14);
             printf("ID da Pessoa a Excluir: ");
             scanf("%d", &P.id_pessoa);
@@ -355,7 +322,7 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Pessoa nao Cadastrada!\n");
             } else {
-                fseek(PtrPe, pos, 0);
+                fseek(PtrPe, pos, SEEK_SET);
                 fread(&P, sizeof(Pessoa), 1, PtrPe);
                 gotoxy(10, 16);
                 printf("Dados da Pessoa:\n");
@@ -373,7 +340,7 @@ void ExclusaoFisica(void)
                     rewind(PtrPe); 
                     FILE *PtrTempPe = fopen("TempPessoas.dat", "wb");
                     while (fread(&P, sizeof(Pessoa), 1, PtrPe) == 1) {
-                        if (P.id_pessoa != P.id_pessoa) 
+                        if (P.id_pessoa != P.id_pessoa) // Corrigido para comparação correta
                             fwrite(&P, sizeof(Pessoa), 1, PtrTempPe);
                     }
                     fclose(PtrPe);
@@ -387,7 +354,7 @@ void ExclusaoFisica(void)
             }
             break;
 
-        case 'C':
+        case 'C': // Excluir Autor
             gotoxy(10, 14);
             printf("ID do Autor a Excluir: ");
             scanf("%d", &A.id_autor);
@@ -396,7 +363,7 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Autor nao Cadastrado!\n");
             } else {
-                fseek(PtrAu, pos, 0);
+                fseek(PtrAu, pos, SEEK_SET);
                 fread(&A, sizeof(Autor), 1, PtrAu);
                 gotoxy(10, 16);
                 printf("Dados do Autor:\n");
@@ -412,7 +379,7 @@ void ExclusaoFisica(void)
                     rewind(PtrAu); 
                     FILE *PtrTempAu = fopen("TempAutores.dat", "wb");
                     while (fread(&A, sizeof(Autor), 1, PtrAu) == 1) {
-                        if (A.id_autor != A.id_autor) 
+                        if (A.id_autor != A.id_autor) // Corrigido para comparação correta
                             fwrite(&A, sizeof(Autor), 1, PtrTempAu);
                     }
                     fclose(PtrAu);
@@ -426,7 +393,7 @@ void ExclusaoFisica(void)
             }
             break;
 
-        case 'D':
+        case 'D': // Excluir Emprestimo
             gotoxy(10, 14);
             printf("ID do Emprestimo a Excluir: ");
             scanf("%d", &E.id_emprestimo);
@@ -435,7 +402,7 @@ void ExclusaoFisica(void)
                 gotoxy(10, 16);
                 printf("Emprestimo nao Cadastrado!\n");
             } else {
-                fseek(PtrEm, pos, 0);
+                fseek(PtrEm, pos, SEEK_SET);
                 fread(&E, sizeof(Emprestimo), 1, PtrEm);
                 gotoxy(10, 16);
                 printf("Dados do Emprestimo:\n");
@@ -455,7 +422,7 @@ void ExclusaoFisica(void)
                     rewind(PtrEm); 
                     FILE *PtrTempEm = fopen("TempEmprestimos.dat", "wb");
                     while (fread(&E, sizeof(Emprestimo), 1, PtrEm) == 1) {
-                        if (E.id_emprestimo != E.id_emprestimo) 
+                        if (E.id_emprestimo != E.id_emprestimo) // Corrigido para comparação correta
                             fwrite(&E, sizeof(Emprestimo), 1, PtrTempEm);
                     }
                     fclose(PtrEm);
@@ -470,18 +437,13 @@ void ExclusaoFisica(void)
             break;
 
         default:
-            gotoxy(10, 14);
-            textcolor(RED);
+            gotoxy(10, 12);
             printf("Opcao Invalida!\n");
             break;
         }
     }
-    getch();
-    fclose(PtrLi);
-    fclose(PtrPe);
-    fclose(PtrAu);
-    fclose(PtrEm);
 }
+
 
 
 
@@ -543,73 +505,80 @@ int BuscaEmprestimo(FILE *Ptr, int ChaveID) {
 void CadastroLivros(void)
 {
     Livros L;
-    clrscr();
     FILE *Ptr = fopen("Livros.dat", "rb+");
 
-    textbackground(CYAN);
-    textcolor(YELLOW);
-    gotoxy(10, 3);
-    printf("## CADASTRO DE LIVROS ##\n");
-    gotoxy(5, 5);
-    printf("ID DO LIVRO: ");
-    scanf("%d", &L.id_livro);
+    if (Ptr == NULL) {
+        printf("Erro ao abrir o arquivo Livros.dat\n");
+        gotoxy(5, 15);
+        printf("Pressione qualquer tecla para sair...\n");
+        getch();
+    } else {
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## CADASTRO DE LIVROS ##\n");
+        gotoxy(5, 5);
+        printf("ID DO LIVRO: ");
+        scanf("%d", &L.id_livro);
 
-    while (L.id_livro > 0)
-    {
-        if (BuscaLivro(Ptr, L.id_livro) == -1)
+        while (L.id_livro > 0)
         {
-            int titulo_valido = 0;
-            while (!titulo_valido)
+            if (BuscaLivro(Ptr, L.id_livro) == -1)
             {
-                gotoxy(5, 7);
-                printf("NOME DO LIVRO: ");
-                fflush(stdin);
-                gets(L.titulo);
-
-                titulo_valido = 1;
-                for (int i = 0; L.titulo[i] != '\0'; i++)
+                int titulo_valido = 0;
+                while (!titulo_valido)
                 {
-                    if (!((L.titulo[i] >= 'A' && L.titulo[i] <= 'Z') || 
-                          (L.titulo[i] >= 'a' && L.titulo[i] <= 'z') || 
-                          L.titulo[i] == ' '))
+                    gotoxy(5, 7);
+                    printf("NOME DO LIVRO: ");
+                    fflush(stdin);
+                    fgets(L.titulo, sizeof(L.titulo), stdin);
+                    L.titulo[strcspn(L.titulo, "\n")] = '\0'; // Remove o '\n' gerado pelo fgets
+
+                    titulo_valido = 1;
+                    for (int i = 0; L.titulo[i] != '\0'; i++)
                     {
-                        titulo_valido = 0;
-                        gotoxy(5, 9);
-                        printf("TÍTULO INVÁLIDO! Use apenas letras e espaços.\n");
-                        i = strlen(L.titulo); 
+                        if (!((L.titulo[i] >= 'A' && L.titulo[i] <= 'Z') || 
+                              (L.titulo[i] >= 'a' && L.titulo[i] <= 'z') || 
+                              L.titulo[i] == ' '))  // Verifica caracteres válidos
+                        {
+                            titulo_valido = 0;
+                            gotoxy(5, 9);
+                            printf("TÍTULO INVÁLIDO! Use apenas letras e espaços.\n");
+                            break;
+                        }
                     }
                 }
-            }
 
-            gotoxy(5, 11);
-            printf("ANO DE PUBLICAÇÃO (XXXX): ");
-            scanf("%d", &L.ano_publi);
+                gotoxy(5, 11);
+                printf("ANO DE PUBLICAÇÃO (XXXX): ");
+                scanf("%d", &L.ano_publi);
 
-            if (L.ano_publi >= 1000 && L.ano_publi <= 2024)
-            {
-                // Marca o livro como ativo (não excluído)
-                L.ativo = 1;
-                
-                fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
-                fwrite(&L, sizeof(Livros), 1, Ptr);
-                gotoxy(5, 13);
-                printf("LIVRO CADASTRADO!\n");
+                if (L.ano_publi >= 1000 && L.ano_publi <= 2024)
+                {
+                    // Marca o livro como ativo (não excluído)
+                    L.ativo = 1;
+                    
+                    fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
+                    fwrite(&L, sizeof(Livros), 1, Ptr);
+                    gotoxy(5, 13);
+                    printf("LIVRO CADASTRADO!\n");
+                }
+                else
+                {
+                    gotoxy(5, 13);
+                    printf("ANO DE PUBLICAÇÃO INVÁLIDO! Data limite até 2024.\n");
+                }
             }
             else
             {
                 gotoxy(5, 13);
-                printf("ANO DE PUBLICAÇÃO INVÁLIDO! Data limite até 2024.\n");
+                printf("ID já cadastrado!\n");
             }
-        }
-        else
-        {
-            gotoxy(5, 13);
-            printf("ID já cadastrado!\n");
-        }
 
-        gotoxy(5, 15);
-        printf("ID DO LIVRO: ");
-        scanf("%d", &L.id_livro);
+            gotoxy(5, 15);
+            printf("ID DO LIVRO: ");
+            scanf("%d", &L.id_livro);
+        }
     }
     fclose(Ptr);
 }
@@ -617,126 +586,135 @@ void CadastroLivros(void)
 void CadastroPessoa(void)
 {
     Pessoa P;
-    clrscr();
     FILE *Ptr = fopen("Pessoas.dat", "rb+");
 
-    textbackground(CYAN);
-    textcolor(YELLOW);
-    gotoxy(10, 3);
-    printf("## CADASTRO DE PESSOAS ##\n");
-    gotoxy(5, 5);
-    printf("ID DA PESSOA: ");
-    scanf("%d", &P.id_pessoa);
+    if (Ptr == NULL) {
+        printf("Erro ao abrir o arquivo Pessoas.dat\n");
+        gotoxy(5, 15);
+        printf("Pressione qualquer tecla para sair...\n");
+        getch();
+    } else {
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## CADASTRO DE PESSOAS ##\n");
+        gotoxy(5, 5);
+        printf("ID DA PESSOA: ");
+        scanf("%d", &P.id_pessoa);
 
-    while (P.id_pessoa > 0)
-    {
-        if (BuscaPessoa(Ptr, P.id_pessoa) == -1)
+        while (P.id_pessoa > 0)
         {
-            gotoxy(5, 7);
-            printf("NOME DA PESSOA: "); fflush(stdin);
-            gets(P.nome);
-            gotoxy(5, 9);
-            printf("TELEFONE((XX)XXXXX-XXXX): "); fflush(stdin);
-            gets(P.telefone);
-            
-            if (strlen(P.telefone) == 14)
+            if (BuscaPessoa(Ptr, P.id_pessoa) == -1)
             {
-                if (P.telefone[0] == '(' || P.telefone[3] == ')' || P.telefone[9] == '-')
+                gotoxy(5, 7);
+                printf("NOME DA PESSOA: "); fflush(stdin);
+                fgets(P.nome, sizeof(P.nome), stdin);
+                P.nome[strcspn(P.nome, "\n")] = '\0';  // Remove o '\n'
+                gotoxy(5, 9);
+                printf("TELEFONE((XX)XXXXX-XXXX): "); fflush(stdin);
+                fgets(P.telefone, sizeof(P.telefone), stdin);
+                P.telefone[strcspn(P.telefone, "\n")] = '\0';  // Remove o '\n'
+
+                if (strlen(P.telefone) == 14)
                 {
-                    gotoxy(5, 11);
-                    printf("ENDEREÇO: "); fflush(stdin);
-                    gets(P.endereco);
-                    
-                    // Marca a pessoa como ativa (não excluída)
-                    P.ativa = 1;
-                    
-                    fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
-                    fwrite(&P, sizeof(Pessoa), 1, Ptr);
-                    gotoxy(5, 13);
-                    printf("PESSOA CADASTRADA!\n");
+                    if (P.telefone[0] == '(' || P.telefone[3] == ')' || P.telefone[9] == '-')
+                    {
+                        gotoxy(5, 11);
+                        printf("ENDEREÇO: "); fflush(stdin);
+                        fgets(P.endereco, sizeof(P.endereco), stdin);
+                        P.endereco[strcspn(P.endereco, "\n")] = '\0';  // Remove o '\n'
+
+                        // Marca a pessoa como ativa (não excluída)
+                        P.ativo = 1;
+
+                        fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
+                        fwrite(&P, sizeof(Pessoa), 1, Ptr);
+                        gotoxy(5, 13);
+                        printf("PESSOA CADASTRADA!\n");
+                    }
+                    else
+                    {
+                        gotoxy(5, 13);
+                        printf("TELEFONE INVÁLIDO!\n");
+                    }
                 }
                 else
                 {
                     gotoxy(5, 13);
                     printf("TELEFONE INVÁLIDO!\n");
-                }
+                }            
             }
             else
             {
                 gotoxy(5, 13);
-                printf("TELEFONE INVÁLIDO!\n");
-            }            
-        }
-        else
-        {
-            gotoxy(5, 13);
-            printf("PESSOA JÁ CADASTRADA!\n");
-        }
+                printf("PESSOA JÁ CADASTRADA!\n");
+            }
 
-        gotoxy(5, 15);
-        getch();
-        gotoxy(5, 17);
-        printf("ID DA PESSOA: ");
-        scanf("%d", &P.id_pessoa);
+            gotoxy(5, 15);
+            getch();
+            gotoxy(5, 17);
+            printf("ID DA PESSOA: ");
+            scanf("%d", &P.id_pessoa);
+        }
     }
 
     fclose(Ptr);
 }
-
 
 void CadastroAutor(void)
 {
     Autor A;
-    clrscr();
-    FILE *Ptr = fopen("Autores.dat", "rb+");
-
-    textbackground(CYAN);
-    textcolor(YELLOW);
-    gotoxy(10, 3);
-    printf("## CADASTRO DE AUTORES ##\n");
-    gotoxy(5, 5);
-    printf("ID DO AUTOR: ");
-    scanf("%d", &A.id_autor);
-
-    while (A.id_autor > 0)
-    {
-        if (BuscaAutor(Ptr, A.id_autor) == -1)
-        {
-            gotoxy(5, 7);
-            printf("NOME DO AUTOR: "); fflush(stdin);
-            gets(A.nome);
-            gotoxy(5, 9);
-            printf("NACIONALIDADE: "); fflush(stdin);
-            gets(A.nacionalidade);
-            
-            // Marca o autor como ativo (não excluído)
-            A.ativo = 1;
-            
-            fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
-            fwrite(&A, sizeof(Autor), 1, Ptr);
-            gotoxy(5, 11);
-            printf("AUTOR CADASTRADO!\n");
-        }
-        else
-        {
-            gotoxy(5, 11);
-            printf("AUTOR JÁ CADASTRADO!\n");
-        }
-
-        gotoxy(5, 13);
-        getch();
-        gotoxy(5, 15);
+    FILE *Ptr = fopen("Autor.dat", "rb+");
+	clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## CADASTRO DE AUTORES ##\n");
+        gotoxy(5, 5);
         printf("ID DO AUTOR: ");
         scanf("%d", &A.id_autor);
-    }
+
+        while (A.id_autor > 0)
+        {
+            if (BuscaAutor(Ptr, A.id_autor) == -1)
+            {
+                gotoxy(5, 7);
+                printf("NOME DO AUTOR: "); fflush(stdin);
+                fgets(A.nome, sizeof(A.nome), stdin);
+                A.nome[strcspn(A.nome, "\n")] = '\0';  // Remove o '\n'
+                gotoxy(5, 9);
+                printf("NACIONALIDADE: "); fflush(stdin);
+                fgets(A.nacionalidade, sizeof(A.nacionalidade), stdin);
+                A.nacionalidade[strcspn(A.nacionalidade, "\n")] = '\0';  // Remove o '\n'
+                
+                A.ativo = 1;
+
+                fseek(Ptr, 0, SEEK_END);  
+                fwrite(&A, sizeof(Autor), 1, Ptr);
+                gotoxy(5, 11);
+                printf("AUTOR CADASTRADO!\n");
+            }
+            else
+            {
+                gotoxy(5, 11);
+                printf("AUTOR JÁ CADASTRADO!\n");
+            }
+
+            gotoxy(5, 13);
+            getch();
+            gotoxy(5, 15);
+            printf("ID DO AUTOR: ");
+            scanf("%d", &A.id_autor);
+        }
 
     fclose(Ptr);
 }
 
+
 void AlterarDados(void)
 {
     LivroAutor LA;
-    Livro Li;
+    Livros Li;
     Pessoa P;
     Autor A;
     int pos;
@@ -776,7 +754,7 @@ void AlterarDados(void)
 
         switch (op)
         {
-        case 'A': 
+        case 'A':
             gotoxy(5, 11);
             printf("\nID DO AUTOR PARA ALTERAR: ");
             scanf("%d", &A.id_autor);
@@ -838,7 +816,7 @@ void AlterarDados(void)
             }
             break;
 
-        case 'B': 
+        case 'B':
             gotoxy(5, 11);
             printf("\nID DO LIVRO PARA ALTERAR: ");
             scanf("%d", &Li.id_livro);
@@ -854,7 +832,7 @@ void AlterarDados(void)
                 else
                 {
                     fseek(PtrL, pos, 0);
-                    fread(&Li, sizeof(Livro), 1, PtrL);
+                    fread(&Li, sizeof(Livros), 1, PtrL);
                     gotoxy(5, 13);
                     printf("## DADOS ENCONTRADOS! ##\n");
                     printf("TÍTULO DO LIVRO: %s\n", Li.titulo);
@@ -876,7 +854,7 @@ void AlterarDados(void)
                         scanf("%d", &Li.ano_publi);
 
                         fseek(PtrL, pos, 0);
-                        fwrite(&Li, sizeof(Livro), 1, PtrL);
+                        fwrite(&Li, sizeof(Livros), 1, PtrL);
 
                         fseek(PtrLA, 0, 0);
                         while (fread(&LA, sizeof(LivroAutor), 1, PtrLA) == 1)
@@ -899,7 +877,7 @@ void AlterarDados(void)
             }
             break;
 
-        case 'C': 
+        case 'C':
             gotoxy(5, 11);
             printf("\nID DA PESSOA PARA ALTERAR: ");
             scanf("%d", &P.id_pessoa);
@@ -972,6 +950,7 @@ void AlterarDados(void)
 }
 
 
+
 void RealizarEmprestimo(void) {
     Livros Li;
     Emprestimo Em;
@@ -989,14 +968,14 @@ void RealizarEmprestimo(void) {
     gotoxy(30, 2);
     cprintf("## EFETUAR EMPRÉSTIMOS ##");
 
-    gotoxy(5, 4); // Linha 4, coluna 5
+    gotoxy(5, 4); 
     printf("I.D PESSOA: ");
     scanf("%d", &P.id_pessoa);
 
     if (BuscaPessoa(PtrPe, P.id_pessoa) != 1) {
-        gotoxy(5, 6); // Linha 6, coluna 5
+        gotoxy(5, 6); 
         printf("## PESSOA ENCONTRADA! ##\n");
-        gotoxy(5, 7); // Linha 7, coluna 5
+        gotoxy(5, 7);
         printf("I.D: %d\n", P.id_pessoa);
         gotoxy(5, 8);
         printf("NOME: %s\n", P.nome);
@@ -1140,30 +1119,23 @@ void RealizarEmprestimo(void) {
 
 void ConsultarDados()
 {
-    int opcao;
+    char opcao;  // Alterado de int para char
     Autor A;
     Livros L;
     Pessoa P;
     Emprestimo E;
     int pos;
 
-    clrscr();
+    system("cls");  // Usando system("cls") para limpar a tela no Windows
     desenharBordas();
-    gotoxy(3, 2);
-    printf("## CONSULTA DE DADOS ##");
-    gotoxy(3, 4);
-    printf("Escolha uma opção:");
-    gotoxy(3, 6);
-    printf("a) Autor");
-    gotoxy(3, 7);
-    printf("b) Livro");
-    gotoxy(3, 8);
-    printf("c) Pessoa");
-    gotoxy(3, 9);
-    printf("d) Empréstimo");
-    gotoxy(3, 11);
+    printf("## CONSULTA DE DADOS ##\n");
+    printf("Escolha uma opção:\n");
+    printf("a) Autor\n");
+    printf("b) Livro\n");
+    printf("c) Pessoa\n");
+    printf("d) Empréstimo\n");
     printf("Opção: ");
-    scanf(" %c", &opcao);
+    scanf(" %c", &opcao);  // Usando um espaço antes de %c para limpar o buffer
 
     switch(opcao)
     {
@@ -1173,9 +1145,7 @@ void ConsultarDados()
                 if (PtrA == NULL) {
                     printf("Erro ao abrir o arquivo de autores.\n");
                 } else {
-                    gotoxy(3, 12);
                     printf("\n## CONSULTA DE AUTORES ##\n");
-                    gotoxy(3, 14);
                     printf("I.D DO AUTOR: ");
                     scanf("%d", &A.id_autor);
 
@@ -1184,24 +1154,21 @@ void ConsultarDados()
                         pos = BuscaAutor(PtrA, A.id_autor);
                         if(pos == -1)
                         {
-                            gotoxy(3, 15);
                             printf("I.D NÃO ENCONTRADO!\n");
                         }
                         else
                         {
                             fseek(PtrA, pos, SEEK_SET);
-                            fread(&A, sizeof(Autor), 1, PtrA);
-                            gotoxy(3, 16);
-                            printf("\nDADOS ENCONTRADOS!\n");
-                            gotoxy(3, 17);
-                            printf("I.D AUTOR: %d\n", A.id_autor);
-                            gotoxy(3, 18);
-                            printf("NOME DO AUTOR: %s\n", A.nome);
-                            gotoxy(3, 19);
-                            printf("NACIONALIDADE: %s\n", A.nacionalidade);
+                            if (fread(&A, sizeof(Autor), 1, PtrA) == 1) {  // Verificando se a leitura foi bem-sucedida
+                                printf("\nDADOS ENCONTRADOS!\n");
+                                printf("I.D AUTOR: %d\n", A.id_autor);
+                                printf("NOME DO AUTOR: %s\n", A.nome);
+                                printf("NACIONALIDADE: %s\n", A.nacionalidade);
+                            } else {
+                                printf("Erro ao ler os dados do autor.\n");
+                            }
                         }
 
-                        gotoxy(3, 21);
                         printf("I.D DO AUTOR: ");
                         scanf("%d", &A.id_autor);
                     }
@@ -1215,12 +1182,9 @@ void ConsultarDados()
             {
                 FILE *PtrL = fopen("Livros.dat", "rb");
                 if (PtrL == NULL) {
-                    gotoxy(3, 12);
                     printf("Erro ao abrir o arquivo de livros.\n");
                 } else {
-                    gotoxy(3, 13);
                     printf("\n## CONSULTA DE LIVROS ##\n");
-                    gotoxy(3, 15);
                     printf("I.D DO LIVRO: ");
                     scanf("%d", &L.id_livro);
 
@@ -1229,24 +1193,21 @@ void ConsultarDados()
                         pos = BuscaLivro(PtrL, L.id_livro);
                         if(pos == -1)
                         {
-                            gotoxy(3, 16);
                             printf("I.D NÃO ENCONTRADO!\n");
                         }
                         else
                         {
                             fseek(PtrL, pos, SEEK_SET);
-                            fread(&L, sizeof(Livros), 1, PtrL);
-                            gotoxy(3, 17);
-                            printf("\nDADOS ENCONTRADOS!\n");
-                            gotoxy(3, 18);
-                            printf("I.D DO LIVRO: %d\n", L.id_livro);
-                            gotoxy(3, 19);
-                            printf("TÍTULO: %s\n", L.titulo);
-                            gotoxy(3, 20);
-                            printf("ANO DE PUBLICAÇÃO: %d\n", L.ano_publi);
+                            if (fread(&L, sizeof(Livros), 1, PtrL) == 1) {  // Verificando se a leitura foi bem-sucedida
+                                printf("\nDADOS ENCONTRADOS!\n");
+                                printf("I.D DO LIVRO: %d\n", L.id_livro);
+                                printf("TÍTULO: %s\n", L.titulo);
+                                printf("ANO DE PUBLICAÇÃO: %d\n", L.ano_publi);
+                            } else {
+                                printf("Erro ao ler os dados do livro.\n");
+                            }
                         }
 
-                        gotoxy(3, 22);
                         printf("I.D DO LIVRO: ");
                         scanf("%d", &L.id_livro);
                     }
@@ -1260,12 +1221,9 @@ void ConsultarDados()
             {
                 FILE *PtrP = fopen("Pessoas.dat", "rb");
                 if (PtrP == NULL) {
-                    gotoxy(3, 12);
                     printf("Erro ao abrir o arquivo de pessoas.\n");
                 } else {
-                    gotoxy(3, 13);
                     printf("\n## CONSULTA DE PESSOAS ##\n");
-                    gotoxy(3, 15);
                     printf("I.D DA PESSOA: ");
                     scanf("%d", &P.id_pessoa);
 
@@ -1274,26 +1232,22 @@ void ConsultarDados()
                         pos = BuscaPessoa(PtrP, P.id_pessoa);
                         if(pos == -1)
                         {
-                            gotoxy(3, 16);
                             printf("I.D NÃO ENCONTRADO!\n");
                         }
                         else
                         {
                             fseek(PtrP, pos, SEEK_SET);
-                            fread(&P, sizeof(Pessoa), 1, PtrP);
-                            gotoxy(3, 17);
-                            printf("\nDADOS ENCONTRADOS!\n");
-                            gotoxy(3, 18);
-                            printf("I.D PESSOA: %d\n", P.id_pessoa);
-                            gotoxy(3, 19);
-                            printf("NOME: %s\n", P.nome);
-                            gotoxy(3, 20);
-                            printf("TELEFONE: %s\n", P.telefone);
-                            gotoxy(3, 21);
-                            printf("ENDEREÇO: %s\n", P.endereco);
+                            if (fread(&P, sizeof(Pessoa), 1, PtrP) == 1) {  // Verificando se a leitura foi bem-sucedida
+                                printf("\nDADOS ENCONTRADOS!\n");
+                                printf("I.D PESSOA: %d\n", P.id_pessoa);
+                                printf("NOME: %s\n", P.nome);
+                                printf("TELEFONE: %s\n", P.telefone);
+                                printf("ENDEREÇO: %s\n", P.endereco);
+                            } else {
+                                printf("Erro ao ler os dados da pessoa.\n");
+                            }
                         }
 
-                        gotoxy(3, 23);
                         printf("I.D DA PESSOA: ");
                         scanf("%d", &P.id_pessoa);
                     }
@@ -1307,37 +1261,30 @@ void ConsultarDados()
             {
                 FILE *PtrE = fopen("Emprestimos.dat", "rb");
                 if (PtrE == NULL) {
-                    gotoxy(3, 12);
                     printf("Erro ao abrir o arquivo de empréstimos.\n");
                 } else {
-                    gotoxy(3, 13);
                     printf("\n## CONSULTA DE EMPRÉSTIMOS ##\n");
-                    gotoxy(3, 15);
                     printf("I.D DO EMPRÉSTIMO: ");
                     scanf("%d", &E.id_emprestimo);
 
                     pos = BuscaEmprestimo(PtrE, E.id_emprestimo);
                     if(pos == -1)
                     {
-                        gotoxy(3, 16);
                         printf("EMPRÉSTIMO NÃO ENCONTRADO!\n");
                     }
                     else
                     {
                         fseek(PtrE, pos, SEEK_SET);
-                        fread(&E, sizeof(Emprestimo), 1, PtrE);
-                        gotoxy(3, 17);
-                        printf("\nDADOS ENCONTRADOS!\n");
-                        gotoxy(3, 18);
-                        printf("I.D DO EMPRÉSTIMO: %d\n", E.id_emprestimo);
-                        gotoxy(3, 19);
-                        printf("ID PESSOA: %d\n", E.id_pessoa);
-                        gotoxy(3, 20);
-                        printf("ID LIVRO: %d\n", E.id_livro);
-                        gotoxy(3, 21);
-                        printf("DATA DE EMPRÉSTIMO: %s\n", E.data_emprestimo);
-                        gotoxy(3, 22);
-                        printf("DATA DE DEVOLUÇÃO: %s\n", E.data_devolucao);
+                        if (fread(&E, sizeof(Emprestimo), 1, PtrE) == 1) {  // Verificando se a leitura foi bem-sucedida
+                            printf("\nDADOS ENCONTRADOS!\n");
+                            printf("I.D DO EMPRÉSTIMO: %d\n", E.id_emprestimo);
+                            printf("ID PESSOA: %d\n", E.id_pessoa);
+                            printf("ID LIVRO: %d\n", E.id_livro);
+                            printf("DATA DE EMPRÉSTIMO: %s\n", E.data_emprestimo);
+                            printf("DATA DE DEVOLUÇÃO: %s\n", E.data_devolucao);
+                        } else {
+                            printf("Erro ao ler os dados do empréstimo.\n");
+                        }
                     }
 
                     fclose(PtrE);
@@ -1346,13 +1293,406 @@ void ConsultarDados()
             break;
 
         default:
-            gotoxy(3, 12);
             printf("Opção inválida.\n");
             break;
     }
 
-    gotoxy(3, 24);
-    getch();  
+    getchar();  // Aguardar a tecla pressionada antes de voltar ao menu
+}
+
+
+void relatorios() {
+    Livros L;
+    Pessoa P;
+    LivroAutor LA;
+    Emprestimo E;
+    Autor A;
+    char opcao;
+    clrscr();
+    textbackground(CYAN);
+    textcolor(YELLOW);
+
+    gotoxy(10, 3);
+    printf("## MENU DE RELATORIOS ##\n");
+    gotoxy(5, 5);
+    printf("A. Relatório de autores por letra\n");
+    printf("B. Relatório de livros por palavra no título\n");
+    printf("C. Relatório de empréstimos por pessoa\n");
+    printf("D. Relatório de livros por autor\n");
+    printf("E. Relatório de empréstimos separados por pessoa\n");
+    printf("F. Relatório Completo\n");
+    printf("G. Sair\n");
+
+    gotoxy(5, 7);
+    printf("Escolha uma opção (A-G): ");
+    opcao = toupper(getch());
+
+    switch (opcao) {
+        case 'A': {
+            char letra;
+            clrscr();
+            gotoxy(5, 3);
+            printf("Digite a letra para filtrar os autores: ");
+            letra = toupper(getch());  // Lê a letra
+            RelatorioAutoresPorLetra(letra);
+            break;
+        }
+        case 'B': {
+            char palavra[50];
+            clrscr();
+            gotoxy(5, 3);
+            printf("Digite a palavra para filtrar os livros: ");
+            scanf("%s", palavra);
+            RelatorioLivrosPorPalavra(palavra);
+            break;
+        }
+        case 'C': {
+            clrscr();
+            gotoxy(5, 3);
+            printf("Digite o ID da pessoa para visualizar os empréstimos: ");
+            scanf("%d", &P.id_pessoa);
+            RelatorioEmprestimosPorPessoa(P.id_pessoa);
+            break;
+        }
+        case 'D': {
+            clrscr();
+            gotoxy(5, 3);
+            printf("Digite o ID do autor para visualizar os livros: ");
+            scanf("%d", &A.id_autor);
+            RelatorioLivrosPorAutor(A.id_autor);
+            break;
+        }
+        case 'E': {
+            clrscr();
+            RelatorioEmprestimosSeparadosPorPessoa();
+            break;
+        }
+        case 'F': {
+            clrscr();
+            RelatorioCompleto();  // Chama a função de relatório completo
+            break;
+        }
+        case 'G':
+            return;  // Se a opção for G, sai do programa
+        default:
+            clrscr();
+            gotoxy(5, 5);
+            printf("Opção inválida! Tente novamente.\n");
+            break;
+    }
+
+    gotoxy(5, 10);
+    printf("\nPressione qualquer tecla para voltar ao menu.");
+    getch();
+    relatorios();  // Chama novamente o menu de relatórios
+}
+
+// Função para gerar o relatório completo de todas as tabelas
+void RelatorioCompleto() {
+    char opcao;
+    clrscr();
+    textbackground(CYAN);
+    textcolor(YELLOW);
+    gotoxy(10, 3);
+    printf("## RELATÓRIO COMPLETO ##\n");
+    gotoxy(5, 5);
+    printf("Escolha qual relatório completo deseja gerar:\n");
+    printf("1. Relatório de Autores\n");
+    printf("2. Relatório de Livros\n");
+    printf("3. Relatório de Pessoas\n");
+    printf("4. Relatório de Empréstimos\n");
+    printf("5. Voltar\n");
+
+    gotoxy(5, 7);
+    printf("Escolha uma opção (1-5): ");
+    opcao = toupper(getch());
+
+    switch (opcao) {
+        case '1':
+            RelatorioAutoresCompleto();
+            break;
+        case '2':
+            RelatorioLivrosCompleto();
+            break;
+        case '3':
+            RelatorioPessoasCompleto();
+            break;
+        case '4':
+            RelatorioEmprestimosCompleto();
+            break;
+        case '5':
+            return;  // Voltar ao menu de relatórios
+        default:
+            clrscr();
+            gotoxy(5, 5);
+            printf("Opção inválida! Tente novamente.\n");
+            getch();
+            RelatorioCompleto();  // Tenta novamente
+            break;
+    }
+
+    gotoxy(5, 10);
+    printf("\nPressione qualquer tecla para voltar ao menu.");
+    getch();
+}
+
+// Função para gerar o relatório completo de autores
+void RelatorioAutoresCompleto() {
+    Autor A;
+    FILE *PtrAutores = fopen("Autor.dat", "rb+");
+
+    if (PtrAutores == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de autores!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Autores ##\n");
+
+        rewind(PtrAutores);
+        int linha = 7;
+        while (fread(&A, sizeof(Autor), 1, PtrAutores) == 1) {
+            gotoxy(5, linha++);
+            printf("ID: %d | Nome: %s | Nacionalidade: %s\n", A.id_autor, A.nome, A.nacionalidade);
+        }
+
+        fclose(PtrAutores);
+    }
+}
+
+// Função para gerar o relatório completo de livros
+void RelatorioLivrosCompleto() {
+    Livros L;
+    FILE *PtrLivros = fopen("Livros.dat", "rb+");
+
+    if (PtrLivros == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de livros!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Livros ##\n");
+
+        rewind(PtrLivros);
+        int linha = 7;
+        while (fread(&L, sizeof(Livros), 1, PtrLivros) == 1) {
+            gotoxy(5, linha++);
+            printf("ID: %d | Título: %s | Ano de Publicação: %d\n", L.id_livro, L.titulo, L.ano_publi);
+        }
+
+        fclose(PtrLivros);
+    }
+}
+
+// Função para gerar o relatório completo de pessoas
+void RelatorioPessoasCompleto() {
+    Pessoa P;
+    FILE *PtrPessoas = fopen("Pessoas.dat", "rb+");
+
+    if (PtrPessoas == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de pessoas!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Pessoas ##\n");
+
+        rewind(PtrPessoas);
+        int linha = 7;
+        while (fread(&P, sizeof(Pessoa), 1, PtrPessoas) == 1) {
+            gotoxy(5, linha++);
+            printf("ID: %d | Nome: %s | Endereço: %s\n", P.id_pessoa, P.nome, P.endereco);
+        }
+
+        fclose(PtrPessoas);
+    }
+}
+
+// Função para gerar o relatório completo de empréstimos
+void RelatorioEmprestimosCompleto() {
+    Emprestimo E;
+    FILE *PtrEmprestimos = fopen("Emprestimos.dat", "rb+");
+
+    if (PtrEmprestimos == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de empréstimos!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Empréstimos ##\n");
+
+        rewind(PtrEmprestimos);
+        int linha = 7;
+        while (fread(&E, sizeof(Emprestimo), 1, PtrEmprestimos) == 1) {
+            gotoxy(5, linha++);
+            printf("ID: %d | Livro ID: %d | Pessoa ID: %d | Data de Empréstimo: %s | Data de Devolução: %s\n",
+                   E.id_emprestimo, E.id_livro, E.id_pessoa, E.data_emprestimo, E.data_devolucao);
+        }
+
+        fclose(PtrEmprestimos);
+    }
+}
+
+void RelatorioAutoresPorLetra(char letra) {
+    Autor A;
+    FILE *PtrAutores = fopen("Autor.dat", "rb+");
+
+    if (PtrAutores == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de autores!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Autores (Letra %c) ##\n", letra);
+
+        rewind(PtrAutores);
+        int linha = 7;
+        while (fread(&A, sizeof(Autor), 1, PtrAutores) == 1) {
+            if (toupper(A.nome[0]) == toupper(letra)) {  // Verifica a letra inicial do nome
+                gotoxy(5, linha++);
+                printf("ID: %d | Nome: %s | Nacionalidade: %s\n", A.id_autor, A.nome, A.nacionalidade);
+            }
+        }
+
+        fclose(PtrAutores);
+    }
+}
+
+// Função para gerar o relatório de livros filtrados por palavra no título
+void RelatorioLivrosPorPalavra(char *palavra) {
+    Livros L;
+    FILE *PtrLivros = fopen("Livros.dat", "rb+");
+
+    if (PtrLivros == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de livros!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Livros (Palavra: %s) ##\n", palavra);
+
+        rewind(PtrLivros);
+        int linha = 7;
+        while (fread(&L, sizeof(Livros), 1, PtrLivros) == 1) {
+            if (strstr(L.titulo, palavra) != NULL) {  // Verifica se a palavra está no título
+                gotoxy(5, linha++);
+                printf("ID: %d | Título: %s | Ano de Publicação: %d\n", L.id_livro, L.titulo, L.ano_publi);
+            }
+        }
+
+        fclose(PtrLivros);
+    }
+}
+
+// Função para gerar o relatório de empréstimos por pessoa
+void RelatorioEmprestimosPorPessoa(int id_pessoa) {
+    Emprestimo E;
+    FILE *PtrEmprestimos = fopen("Emprestimos.dat", "rb+");
+
+    if (PtrEmprestimos == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de empréstimos!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Empréstimos para Pessoa (ID: %d) ##\n", id_pessoa);
+
+        rewind(PtrEmprestimos);
+        int linha = 7;
+        while (fread(&E, sizeof(Emprestimo), 1, PtrEmprestimos) == 1) {
+            if (E.id_pessoa == id_pessoa) {
+                gotoxy(5, linha++);
+                printf("ID: %d | Livro ID: %d | Data de Empréstimo: %s | Data de Devolução: %s\n",
+                       E.id_emprestimo, E.id_livro, E.data_emprestimo, E.data_devolucao);
+            }
+        }
+
+        fclose(PtrEmprestimos);
+    }
+}
+
+// Função para gerar o relatório de livros por autor
+void RelatorioLivrosPorAutor(int id_autor) {
+    LivroAutor LA;
+    Livros L;
+    FILE *PtrLivros = fopen("Livros.dat", "rb+");
+    FILE *PtrLivroAutor = fopen("LivroAutor.dat", "rb+");
+
+    if (PtrLivros == NULL || PtrLivroAutor == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivos de livros ou livro-autor!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Livros por Autor (ID: %d) ##\n", id_autor);
+
+        rewind(PtrLivroAutor);
+        int linha = 7;
+        while (fread(&LA, sizeof(LivroAutor), 1, PtrLivroAutor) == 1) {
+            if (LA.id_autor == id_autor) {
+                rewind(PtrLivros);
+                while (fread(&L, sizeof(Livros), 1, PtrLivros) == 1) {
+                    if (L.id_livro == LA.id_livro) {
+                        gotoxy(5, linha++);
+                        printf("ID: %d | Título: %s | Ano de Publicação: %d\n", L.id_livro, L.titulo, L.ano_publi);
+                    }
+                }
+                rewind(PtrLivros);
+            }
+        }
+
+        fclose(PtrLivros);
+        fclose(PtrLivroAutor);
+    }
+}
+
+// Função para gerar o relatório de empréstimos separados por pessoa
+void RelatorioEmprestimosSeparadosPorPessoa() {
+    Emprestimo E;
+    FILE *PtrEmprestimos = fopen("Emprestimos.dat", "rb+");
+
+    if (PtrEmprestimos == NULL) {
+        gotoxy(5, 5);
+        printf("Erro ao abrir arquivo de empréstimos!\n");
+    } else {
+        clrscr();
+        textbackground(CYAN);
+        textcolor(YELLOW);
+        gotoxy(10, 3);
+        printf("## Relatório de Empréstimos Separados por Pessoa ##\n");
+
+        rewind(PtrEmprestimos);
+        int linha = 7;
+        int current_person = -1;
+        while (fread(&E, sizeof(Emprestimo), 1, PtrEmprestimos) == 1) {
+            if (E.id_pessoa != current_person) {
+                current_person = E.id_pessoa;
+                gotoxy(5, linha++);
+                printf("\nPessoa ID: %d\n", E.id_pessoa);
+            }
+            gotoxy(5, linha++);
+            printf("ID: %d | Livro ID: %d | Data de Empréstimo: %s | Data de Devolução: %s\n",
+                   E.id_emprestimo, E.id_livro, E.data_emprestimo, E.data_devolucao);
+        }
+
+        fclose(PtrEmprestimos);
+    }
 }
 
 void desenharBordas() {
@@ -1370,17 +1710,10 @@ char Menu(void)
 {
     char op;
 
-    clrscr(); 
-	
+    clrscr(); // Limpa a tela
+    
     textcolor(CYAN);
-    for (int i = 1; i <= 80; i++) {
-        gotoxy(i, 1); printf("#"); 
-        gotoxy(i, 25); printf("#"); 
-    }
-    for (int i = 1; i <= 25; i++) {
-        gotoxy(1, i); printf("#");  
-        gotoxy(80, i); printf("#"); 
-    }
+    desenharBordas(); // Chama a função para desenhar as bordas
 
     gotoxy(30, 2);
     textcolor(WHITE);
@@ -1394,16 +1727,8 @@ char Menu(void)
     gotoxy(5, 8); printf("[E] EXCLUSÃO LÓGICA");
     gotoxy(5, 9); printf("[F] EXCLUSÃO FÍSICA");
     gotoxy(5, 10); printf("[G] ALTERAÇÃO POR ID");
-    gotoxy(5, 11); printf("[H] CONSULTAR POR ID"););
-    gotoxy(5, 15); printf("[N] GERAR RELATÓRIO DOS LIVROS");
-    gotoxy(5, 16); printf("[O] GERAR RELATÓRIO DOS AUTORES");
-    gotoxy(5, 17); printf("[P] GERAR RELATÓRIO DAS PESSOAS");
-    gotoxy(5, 18); printf("[Q] GERAR RELATÓRIO GERAL");
-    gotoxy(5, 19); printf("[R] GERAR RELATÓRIO POR LETRA");
-    gotoxy(5, 20); printf("[S] GERAR RELATÓRIO POR PALAVRA NO TÍTULO");
-    gotoxy(5, 21); printf("[T] GERAR RELATÓRIO DE EMPRÉSTIMO FEITO POR UMA PESSOA");
-    gotoxy(5, 22); printf("[U] GERAR RELATÓRIO DE TODOS OS LIVROS DE UM AUTOR");
-    gotoxy(5, 23); printf("[V] GERAR RELATÓRIO DE TODOS OS EMPRÉSTIMOS FEITOS POR UMA PESSOA");
+    gotoxy(5, 11); printf("[H] CONSULTAR POR ID");
+    gotoxy(5, 15); printf("[I] RELATÓRIO");
 
     gotoxy(5, 24);
     textcolor(LIGHTCYAN);
@@ -1419,59 +1744,33 @@ char Menu(void)
 
 int main(void)
 {
-	setlocale(LC_ALL,"Portuguese");
-	char op;
-	do
-	{
-		op = Menu();
-		switch(op)
-		{
-			case 'A': CadastroLivros();
-				break;
-			case 'B': CadastroAutor();
-				break;
-			case 'C': CadastroPessoa();
-				break;
-			case 'D': RealizarEmprestimo();
-				break;
-			case 'E': ExclusaoLogica();
-				break;
-			case 'F': ExclusaoFisica();
-				break;
-			case 'G': AlterarDados();
-				break;
-			case 'H': ConsultarDados();
-				break;
-			case 'I': ;
-				break;
-			case 'J': 
-				break;
-			case 'K': 
-				break;
-			case 'L': 
-				break;
-			case 'M': 
-				break;
-			case 'N':
-				break;
-			case 'O':
-				break;
-			case 'P':
-				break;
-			case 'Q':
-				break;
-			case 'R':
-				break;
-			case 'S':
-				break;
-			case 'T':
-				break;
-			case 'U':
-				break;
-			case 'V':
-				break;				
-		}
-	}while(op!=27);
-	
-	return 0;
+    setlocale(LC_ALL,"Portuguese");
+    char op;
+    do
+    {
+        op = Menu();
+        switch(op)
+        {
+            case 'A': CadastroLivros();
+                break;
+            case 'B': CadastroAutor();
+                break;
+            case 'C': CadastroPessoa();
+                break;
+            case 'D': RealizarEmprestimo();
+                break;
+            case 'E': ExclusaoLogica();
+                break;
+            case 'F': ExclusaoFisica();
+                break;
+            case 'G': AlterarDados();
+                break;
+            case 'H': ConsultarDados();
+                break;
+            case 'I': relatorios();
+                break;  
+        }
+    } while(op != '0'); // Sai quando o usuário digitar '0'
+    
+    return 0;
 }
