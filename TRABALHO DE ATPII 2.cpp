@@ -544,7 +544,8 @@ void CadastroLivros(void)
 {
     Livros L;
     clrscr();
-    FILE *Ptr = fopen("Livros.dat", "ab+");
+    FILE *Ptr = fopen("Livros.dat", "rb+");
+
     textbackground(CYAN);
     textcolor(YELLOW);
     gotoxy(10, 3);
@@ -586,6 +587,10 @@ void CadastroLivros(void)
 
             if (L.ano_publi >= 1000 && L.ano_publi <= 2024)
             {
+                // Marca o livro como ativo (não excluído)
+                L.ativo = 1;
+                
+                fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
                 fwrite(&L, sizeof(Livros), 1, Ptr);
                 gotoxy(5, 13);
                 printf("LIVRO CADASTRADO!\n");
@@ -613,7 +618,7 @@ void CadastroPessoa(void)
 {
     Pessoa P;
     clrscr();
-    FILE *Ptr = fopen("Pessoas.dat", "ab+");
+    FILE *Ptr = fopen("Pessoas.dat", "rb+");
 
     textbackground(CYAN);
     textcolor(YELLOW);
@@ -633,14 +638,20 @@ void CadastroPessoa(void)
             gotoxy(5, 9);
             printf("TELEFONE((XX)XXXXX-XXXX): "); fflush(stdin);
             gets(P.telefone);
+            
             if (strlen(P.telefone) == 14)
             {
                 if (P.telefone[0] == '(' || P.telefone[3] == ')' || P.telefone[9] == '-')
                 {
                     gotoxy(5, 11);
                     printf("ENDEREÇO: "); fflush(stdin);
-                    gets(P.endereco);                
-                    fwrite(&P, sizeof(Pessoa), 1, Ptr);    
+                    gets(P.endereco);
+                    
+                    // Marca a pessoa como ativa (não excluída)
+                    P.ativa = 1;
+                    
+                    fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
+                    fwrite(&P, sizeof(Pessoa), 1, Ptr);
                     gotoxy(5, 13);
                     printf("PESSOA CADASTRADA!\n");
                 }
@@ -648,14 +659,12 @@ void CadastroPessoa(void)
                 {
                     gotoxy(5, 13);
                     printf("TELEFONE INVÁLIDO!\n");
-                    fclose(Ptr);
                 }
             }
             else
             {
                 gotoxy(5, 13);
-                printf("TELEFONE INVÁLIDO!\n"); 
-                fclose(Ptr);
+                printf("TELEFONE INVÁLIDO!\n");
             }            
         }
         else
@@ -673,6 +682,57 @@ void CadastroPessoa(void)
 
     fclose(Ptr);
 }
+
+
+void CadastroAutor(void)
+{
+    Autor A;
+    clrscr();
+    FILE *Ptr = fopen("Autores.dat", "rb+");
+
+    textbackground(CYAN);
+    textcolor(YELLOW);
+    gotoxy(10, 3);
+    printf("## CADASTRO DE AUTORES ##\n");
+    gotoxy(5, 5);
+    printf("ID DO AUTOR: ");
+    scanf("%d", &A.id_autor);
+
+    while (A.id_autor > 0)
+    {
+        if (BuscaAutor(Ptr, A.id_autor) == -1)
+        {
+            gotoxy(5, 7);
+            printf("NOME DO AUTOR: "); fflush(stdin);
+            gets(A.nome);
+            gotoxy(5, 9);
+            printf("NACIONALIDADE: "); fflush(stdin);
+            gets(A.nacionalidade);
+            
+            // Marca o autor como ativo (não excluído)
+            A.ativo = 1;
+            
+            fseek(Ptr, 0, SEEK_END);  // Move para o final do arquivo antes de adicionar
+            fwrite(&A, sizeof(Autor), 1, Ptr);
+            gotoxy(5, 11);
+            printf("AUTOR CADASTRADO!\n");
+        }
+        else
+        {
+            gotoxy(5, 11);
+            printf("AUTOR JÁ CADASTRADO!\n");
+        }
+
+        gotoxy(5, 13);
+        getch();
+        gotoxy(5, 15);
+        printf("ID DO AUTOR: ");
+        scanf("%d", &A.id_autor);
+    }
+
+    fclose(Ptr);
+}
+
 void AlterarDados(void)
 {
     LivroAutor LA;
